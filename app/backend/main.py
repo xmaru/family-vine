@@ -2,13 +2,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
 
-from app.backend.api.routes import documents
 from config import settings
 from db.session import engine
-from db.base import Base
-
-# Import API routers
-from api.routes import auth, metadata, people, relationships, visualization
+from db.base import Base  # This should import all models
 
 # Create database tables
 def create_tables():
@@ -23,19 +19,19 @@ def get_application():
     # Set up CORS
     _app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.BACKEND_CORS_ORIGINS,
+        # Allow all origins for development - make sure to restrict this in production
+        allow_origins=["*"],  # Temporary fix to allow all origins
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
 
+    # Import API routers here to avoid circular imports
+    from api.routes import auth, documents
+
     # Include routers
-    _app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
-    _app.include_router(documents.router, prefix="/api/documents", tags=["documents"])
-    _app.include_router(metadata.router, prefix="/api/documents/{document_id}/metadata", tags=["metadata"])
-    _app.include_router(people.router, prefix="/api/people", tags=["people"])
-    _app.include_router(relationships.router, prefix="/api/relationships", tags=["relationships"])
-    _app.include_router(visualization.router, prefix="/api/visualization", tags=["visualization"])
+    _app.include_router(auth, prefix="/api/auth", tags=["auth"])
+    _app.include_router(documents, prefix="/api/documents", tags=["documents"])
 
     return _app
 

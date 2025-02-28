@@ -1,14 +1,18 @@
-from fastapi import APIRouter
+# Import routers
+from api.routes.auth import router as auth_router
+from api.routes.documents import router as documents_router
 
-from api.routes import auth, documents
+# Define the routers for main.py to import
+auth = auth_router
+documents = documents_router
 
-router = APIRouter()
-router.include_router(auth.router, prefix="/auth", tags=["auth"])
-router.include_router(documents.router, prefix="/documents", tags=["documents"])
-
-# Once implemented, uncomment the following routers
-# from api.routes import metadata, people, relationships, visualization
-# router.include_router(metadata.router, prefix="/documents/{document_id}/metadata", tags=["metadata"])
-# router.include_router(people.router, prefix="/people", tags=["people"])
-# router.include_router(relationships.router, prefix="/relationships", tags=["relationships"])
-# router.include_router(visualization.router, prefix="/visualization", tags=["visualization"])
+# Once implemented, uncomment the following imports
+# from api.routes.metadata import router as metadata_router
+# from api.routes.people import router as people_router
+# from api.routes.relationships import router as relationships_router
+# from api.routes.visualization import router as visualization_router
+# 
+# metadata = metadata_router
+# people = people_router
+# relationships = relationships_router
+# visualization = visualization_router

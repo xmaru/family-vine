@@ -18,5 +18,5 @@ class Document(Base):
     
     # Define relationships
     user = relationship("User", back_populates="documents")
-    metadata = relationship("Metadata", back_populates="document", uselist=False)
+    document_metadata = relationship("Metadata", back_populates="document", uselist=False)
     people = relationship("Person", secondary="document_person", back_populates="documents")

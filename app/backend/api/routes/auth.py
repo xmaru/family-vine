@@ -1,7 +1,7 @@
 from datetime import timedelta
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
@@ -11,18 +11,29 @@ from db.session import get_db
 from models.user import User
 from schemas.token import Token
 from schemas.user import User as UserSchema, UserCreate, UserInDB
+from api.dependencies import get_current_active_user
 
 router = APIRouter()
 
 @router.post("/register", response_model=UserSchema)
-def register(
+async def register(
     *,
+    request: Request,
     db: Session = Depends(get_db),
     user_in: UserCreate,
 ) -> Any:
     """
     Register a new user
     """
+    # Debug - log request data
+    print("Register request received")
+    print(f"Request headers: {request.headers}")
+    try:
+        body = await request.json()
+        print(f"Request body: {body}")
+    except Exception as e:
+        print(f"Error reading request body: {e}")
+    
     # Check if user with this email already exists
     user = db.query(User).filter(User.email == user_in.email).first()
     if user:
@@ -54,13 +65,15 @@ def register(
 
 @router.post("/login", response_model=Token)
 def login(
-    *,
     db: Session = Depends(get_db),
     form_data: OAuth2PasswordRequestForm = Depends(),
 ) -> Any:
     """
     OAuth2 compatible token login, get an access token for future requests
     """
+    # Debug - log login attempt
+    print(f"Login attempt for user: {form_data.username}")
+    
     # Try to find user by email
     user = db.query(User).filter(User.email == form_data.username).first()
     
@@ -82,3 +95,23 @@ def login(
         ),
         "token_type": "bearer",
     }
+
+@router.get("/me", response_model=UserSchema)
+def get_current_user_info(
+    current_user: User = Depends(get_current_active_user),
+) -> Any:
+    """
+    Get current user information
+    """
+    print(f"Getting info for user ID: {current_user.id}")
+    return current_user
+
+# Add a simple OPTIONS handler for the register endpoint
+@router.options("/register")
+async def options_register():
+    return {}
+
+# Add a simple OPTIONS handler for the me endpoint
+@router.options("/me")
+async def options_me():
+    return {}

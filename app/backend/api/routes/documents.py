@@ -1,6 +1,6 @@
 from typing import List, Any
 import os
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, status
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, status, Response
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
@@ -120,13 +120,14 @@ def update_document(
     
     return document
 
-@router.delete("/{document_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{document_id}")
 def delete_document(
     *,
     db: Session = Depends(get_db),
     document_id: int,
-    current_user: User = Depends(get_current_active_user)
-) -> Any:
+    current_user: User = Depends(get_current_active_user),
+    response: Response
+) -> None:
     """
     Delete document
     """
@@ -149,6 +150,8 @@ def delete_document(
     db.delete(document)
     db.commit()
     
+    # Set the response status code to 204 No Content
+    response.status_code = status.HTTP_204_NO_CONTENT
     return None
 
 @router.get("/{document_id}/download")

@@ -1,0 +1,162 @@
+#!/usr/bin/env python
+"""
+This script tests the full authentication flow:
+1. Register a user
+2. Login with that user
+3. Get user info with the token
+"""
+import requests
+import json
+import argparse
+import random
+import string
+import time
+
+def generate_random_string(length=6):
+    """Generate a random string of fixed length"""
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for i in range(length))
+
+def test_auth_flow(base_url):
+    """Test the complete authentication flow"""
+    
+    # Generate random credentials to avoid conflicts
+    random_suffix = generate_random_string()
+    email = f"test_{random_suffix}@example.com"
+    username = f"testuser_{random_suffix}"
+    password = "testpassword123"
+    full_name = f"Test User {random_suffix.capitalize()}"
+    
+    print(f"\n{'='*50}")
+    print("Testing Full Authentication Flow")
+    print(f"{'='*50}")
+    
+    # Step 1: Register a new user
+    print("\nStep 1: Testing User Registration")
+    print(f"{'~'*30}")
+    
+    register_url = f"{base_url}/api/auth/register"
+    user_data = {
+        "email": email,
+        "username": username,
+        "password": password,
+        "full_name": full_name
+    }
+    
+    headers = {
+        "Content-Type": "application/json"
+    }
+    
+    try:
+        print(f"Registering user: {username}")
+        register_response = requests.post(
+            register_url, 
+            headers=headers, 
+            data=json.dumps(user_data)
+        )
+        
+        print(f"Status Code: {register_response.status_code}")
+        
+        if register_response.status_code == 200:
+            print("✅ Registration successful!")
+            print(f"User details: {json.dumps(register_response.json(), indent=2)}")
+            user_id = register_response.json().get('id')
+            print(f"User ID: {user_id}")
+        else:
+            print(f"❌ Registration failed: {register_response.text}")
+            return False
+    except Exception as e:
+        print(f"❌ Registration error: {e}")
+        return False
+    
+    # Sleep briefly to ensure database consistency
+    time.sleep(1)
+    
+    # Step 2: Login with the new user
+    print("\nStep 2: Testing User Login")
+    print(f"{'~'*30}")
+    
+    login_url = f"{base_url}/api/auth/login"
+    
+    # Using form data format as required by OAuth2 password flow
+    login_data = {
+        "username": username,  # Backend expects the username field
+        "password": password
+    }
+    
+    try:
+        print(f"Logging in with username: {username}")
+        login_response = requests.post(
+            login_url, 
+            data=login_data,  # Use data instead of json for form data
+        )
+        
+        print(f"Status Code: {login_response.status_code}")
+        
+        if login_response.status_code == 200:
+            token_data = login_response.json()
+            access_token = token_data['access_token']
+            print("✅ Login successful!")
+            print(f"Token: {access_token[:15]}...")
+            
+            # Step 3: Get current user with the token
+            print("\nStep 3: Testing Get Current User")
+            print(f"{'~'*30}")
+            
+            me_url = f"{base_url}/api/auth/me"
+            auth_headers = {
+                "Authorization": f"Bearer {access_token}"
+            }
+            
+            print("Getting current user data...")
+            me_response = requests.get(me_url, headers=auth_headers)
+            
+            print(f"Status Code: {me_response.status_code}")
+            
+            if me_response.status_code == 200:
+                print("✅ Successfully retrieved user data!")
+                print(f"User data: {json.dumps(me_response.json(), indent=2)}")
+                
+                # Verify the user ID matches
+                retrieved_id = me_response.json().get('id')
+                if retrieved_id == user_id:
+                    print("✅ User ID verification successful!")
+                else:
+                    print(f"❌ User ID verification failed. Expected {user_id}, got {retrieved_id}")
+            else:
+                print(f"❌ Failed to retrieve user data: {me_response.text}")
+                
+                # Debug headers
+                print("\nDebug Information:")
+                print("Request Headers:")
+                print(auth_headers)
+                print("\nResponse Headers:")
+                print(dict(me_response.headers))
+                
+                return False
+        else:
+            print(f"❌ Login failed: {login_response.text}")
+            return False
+    except Exception as e:
+        print(f"❌ Login error: {e}")
+        return False
+    
+    print(f"\n{'='*50}")
+    print("✅ Full authentication flow test passed!")
+    print(f"{'='*50}")
+    print("\nTest user credentials:")
+    print(f"Email: {email}")
+    print(f"Username: {username}")
+    print(f"Password: {password}")
+    
+    return True
+
+def main():
+    parser = argparse.ArgumentParser(description="Test the full authentication flow")
+    parser.add_argument("--url", default="http://localhost:8000", help="Base URL of the API")
+    
+    args = parser.parse_args()
+    test_auth_flow(args.url)
+
+if __name__ == "__main__":
+    main()

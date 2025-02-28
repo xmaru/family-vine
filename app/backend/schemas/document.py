@@ -23,7 +23,7 @@ class DocumentInDBBase(DocumentBase):
     updated_at: Optional[datetime] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True  # Updated from orm_mode
 
 class Document(DocumentInDBBase):
     pass

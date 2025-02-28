@@ -7,3 +7,6 @@ class Token(BaseModel):
     
 class TokenPayload(BaseModel):
     sub: Optional[str] = None
+    
+    class Config:
+        from_attributes = True  # Updated from orm_mode

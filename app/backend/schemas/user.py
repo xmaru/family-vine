@@ -19,7 +19,7 @@ class UserInDBBase(UserBase):
     is_active: bool
     
     class Config:
-        orm_mode = True
+        from_attributes = True  # Updated from orm_mode
         
 class User(UserInDBBase):
     pass

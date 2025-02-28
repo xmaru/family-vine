@@ -6,6 +6,7 @@ const api = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
   },
 });
 
@@ -19,6 +20,26 @@ api.interceptors.request.use(
     return config;
   },
   (error) => Promise.reject(error)
+);
+
+// Add a response interceptor to handle authentication errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Handle 401 Unauthorized errors globally
+    if (error.response && error.response.status === 401) {
+      // If the token is expired or invalid, clear it
+      localStorage.removeItem('token');
+      
+      // Redirect to login page if not already there
+      const currentPath = window.location.pathname;
+      if (currentPath !== '/login' && currentPath !== '/register') {
+        window.location.href = '/login';
+      }
+    }
+    
+    return Promise.reject(error);
+  }
 );
 
 export default api;
