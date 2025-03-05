@@ -1,9 +1,10 @@
   /* 
   
-    - CookieHandler will be for data less than 4KB. 
+    - CookieHandler will be for data less than 4KB. Do not store passwords, sensitive data, or encrypted data in local storage.
 
-    - If the data being persisted may exceed the memory limit, use 
-    AppStorage class to storage, retrieve, and update the data.
+    - If the data being persisted may exceed the memory limit, use AppStorage class to storage, retrieve, and update the data.
+
+    - For any new key value pairs added to LocalStorageUtil, implement the get and set methods in the extention, AppStorage.
 
   */
 
