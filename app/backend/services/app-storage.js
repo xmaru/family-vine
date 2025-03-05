@@ -1,4 +1,7 @@
   /* 
+
+    This file handles frequently retrieved values. If your key value pair may be called in multiple places across the app, 
+    or multiple times per run, then this storage system may be useful.
   
     - CookieHandler will be for data less than 4KB. Do not store passwords, sensitive data, or encrypted data in local storage.
 
