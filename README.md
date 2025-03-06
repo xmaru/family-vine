@@ -30,7 +30,7 @@ Family Vine is a media manager with an added empahsis on maintaing your family s
 
 ### Database
 
-- PostgreSQL (recommended)
+- SQLite
 Relational data model for users, documents, metadata, and relationships
 
 ## Getting Started
@@ -41,44 +41,59 @@ Relational data model for users, documents, metadata, and relationships
 - PostgreSQL
 
 ### Backend Setup
-
+#### Clone repository
 ```bash 
-# Clone repository
-git clone https://github.com/yourusername/file-visualization-app.git
-cd file-visualization-app/backend
+git clone https://github.com/xmaru/family-vine.git
+```
+```bash
+cd family-vine/app/backend
+```
 
-
-# Create virtual environment
+#### Create virtual environment
+```bash
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+```bash
+source venv/bin/activate
+```
+##### On Windows: venv\Scripts\activate
 
-# Install dependencies
+#### Install dependencies
+```bash
 pip install -r requirements.txt
-
-# Configure environment variables
+```
+#### Configure environment variables
+```bash
 cp .env.example .env
-# Edit .env file with your database credentials
+```
+#### Edit .env file with your database credentials
 
-# Run migrations
+#### Run migrations
+```bash
 alembic upgrade head
-
-# Start the server
+```
+#### Start the server
+```bash
 uvicorn main:app --reload
 ```
 
 ### Frontend Setup
+#### Navigate to frontend directory
 ```bash
-# Navigate to frontend directory
 cd ../frontend
-
-# Install dependencies
+```
+#### Install dependencies
+```bash
 npm install
-
-# Configure environment
+```
+#### Configure environment
+```bash
 cp .env.example .env
-# Edit .env file with your API URL
+```
+#### Edit .env file with your API URL
 
-# Start development server
+#### Start development server
+```bash
 npm start
 ```
 
@@ -135,13 +150,18 @@ The database consists of the following main tables:
 - Frontend: Follow ESLint configuration
 
 ### Testing
+#### Backend tests
 ```bash
-# Backend tests
 cd backend
+```
+```bash
 pytest
-
-# Frontend tests
+```
+#### Frontend tests
+```bash
 cd frontend
+```
+```bash
 npm test
 ```
 
@@ -151,4 +171,5 @@ __MIT License__
 ## Contributors
 
 Luis Guillen luis.a.guillen.arcos-1@ou.edu
+John Cervantes john.f.cervantes-1@ou.edu
 Your Name your.email@example.com
