@@ -172,4 +172,5 @@ __MIT License__
 
 Luis Guillen luis.a.guillen.arcos-1@ou.edu
 John Cervantes john.f.cervantes-1@ou.edu
+Umar Mian umian3@ou.edu
 Your Name your.email@example.com
