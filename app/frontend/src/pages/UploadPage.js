@@ -1,9 +1,9 @@
-import React, { useContext } from 'react';
-import { Navigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
-import FileUpload from '../components/documents/FileUpload';
-import Header from '../components/layout/Header';
-import Footer from '../components/layout/Footer';
+import React, { useContext } from "react";
+import { Navigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
+import FileUpload from "../components/documents/FileUpload";
+import Header from "../components/layout/Header";
+import Footer from "../components/layout/Footer";
 
 const UploadPage = () => {
   const { user, loading } = useContext(AuthContext);
