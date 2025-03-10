@@ -104,7 +104,76 @@ Once the backend server is running, you can access the API documentation at [htt
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request.
+- Authentication: /api/auth/*
+- Users: /api/users/*
+- Documents: /api/documents/*
+- Metadata: /api/documents/{id}/metadata
+- People: /api/people/*
+- Relationships: /api/relationships/*
+- Visualization: /api/visualization/*
+
+See the API documentation for more details.
+
+## Database Schema
+The database consists of the following main tables:
+
+- Users: Store user information
+- Documents: Track uploaded files
+- Metadata: Store 5W information for documents
+- People: Track people in the user's network
+- Relationships: Define relationships between users and people
+- DocumentPerson: Connect documents to people
+
+## Directory Structure
+
+```
+|── backend/
+│   ├── api/          # API endpoints
+│   ├── core/         # Core functionality
+│   ├── db/           # Database connections
+│   ├── models/       # SQLAlchemy models
+│   ├── schemas/      # Pydantic schemas
+│   ├── services/     # Business logic
+│   └── utils/        # Utility functions
+│
+└── frontend/
+    ├── public/       # Static files
+    └── src/
+        ├── api/      # API client
+        ├── components/  # React components
+        ├── context/  # React context
+        ├── hooks/    # Custom hooks
+        ├── pages/    # Page components
+        └── utils/    # Utility functions
+```
+
+## Development
+### Code Style
+
+- Backend: Follow PEP 8 guidelines
+- Frontend: Follow ESLint configuration
+
+### Testing
+#### Backend tests
+```bash
+cd backend
+```
+```bash
+pytest
+```
+#### Frontend tests
+```bash
+cd frontend
+```
+```bash
+npm test
+```
 
 ## License
 
-This project is licensed under the MIT License.
+## Contributors
+
+Luis Guillen luis.a.guillen.arcos-1@ou.edu
+John Cervantes john.f.cervantes-1@ou.edu
+Umar Mian umian3@ou.edu
+Your Name your.email@example.com

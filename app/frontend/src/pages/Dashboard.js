@@ -1,8 +1,8 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
-import useAuth from '../hooks/useAuth';
-import Header from '../components/layout/Header';
-import Footer from '../components/layout/Footer';
+import React from "react";
+import { Navigate } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
+import Header from "../components/layout/Header";
+import Footer from "../components/layout/Footer";
 
 const Dashboard = () => {
   const { user, loading } = useAuth();
@@ -26,7 +26,7 @@ const Dashboard = () => {
             <h1>Dashboard</h1>
             <p>Welcome to your Family Vine dashboard</p>
           </div>
-          
+
           <div className="dashboard-content">
             <p>Dashboard content will go here</p>
           </div>
