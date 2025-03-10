@@ -209,4 +209,5 @@ npm test
 Luis Guillen luis.a.guillen.arcos-1@ou.edu
 John Cervantes john.f.cervantes-1@ou.edu
 Umar Mian umian3@ou.edu
+Samuel Lupton samuel@ou.edu
 Your Name your.email@example.com
