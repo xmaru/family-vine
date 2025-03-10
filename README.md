@@ -1,126 +1,163 @@
 # Family Vine
 
-TODO: Pictures of app
+Family Vine is a web application designed to help users manage and visualize family documents, relationships, and genealogical information. It consists of a React frontend for user interaction and a FastAPI backend for data processing and storage.
 
-## What is Family Vine
+## Project Overview
 
-Family Vine is a media manager with an added empahsis on maintaing your family story. Alongside saving media, it also allows you to tag it with relevant information, like who's in it, where it was taken, and for what event. In doing so, family vine weaves together a story of events through your photos and videos. What's more is that it allows you to traverse this story as you add more memories!
+The Family Vine application allows users to:
 
-## Features
+- Upload and manage family documents
+- Add metadata to documents (who, what, when, where, why information)
+- Create and manage profiles for family members
+- Define relationships between family members
+- Visualize family connections and document relationships
 
-- File Upload: Drag-and-drop interface for easy file uploads
-- Metadata Tagging: Tag files with the 5W information (Who, What, Where, Why, When)
-- Relationship Management: Define relationships with people (child, parent, etc.)
-- Visualization: Interactive graph showing relationships and timeline view of documents
+## System Architecture
 
-## Tech Stack
-### Frontend
+Family Vine is built with:
 
-- React.js
-- D3.js for visualizations
-- Modern UI components
-- Context API for state management
+- **Frontend**: React-based single-page application
+- **Backend**: Python FastAPI RESTful API
+- **Database**: SQLite by default (configurable to other databases)
+- **Authentication**: JWT-based authentication system
 
-### Backend
+## Prerequisites
 
-- Python with FastAPI
-- JWT authentication
-- RESTful API design
-- SQLAlchemy ORM
+- **Frontend**: Node.js (version 14 or later) and npm (version 6 or later)
+- **Backend**: Python 3.8 or later and pip
 
-### Database
-
-- SQLite
-Relational data model for users, documents, metadata, and relationships
-
-## Getting Started
-### Prerequisites
-
-- Node.js (v14+)
-- Python (v3.8+)
-- PostgreSQL
+## Setup Instructions
 
 ### Backend Setup
-#### Clone repository
-```bash 
-git clone https://github.com/xmaru/family-vine.git
-```
-```bash
-cd family-vine/app/backend
-```
 
-#### Create virtual environment
-```bash
-python -m venv venv
-```
-```bash
-source venv/bin/activate
-```
-##### On Windows: venv\Scripts\activate
+1. **Navigate to the backend directory:**
 
-#### Install dependencies
-```bash
-pip install -r requirements.txt
-```
-#### Configure environment variables
-```bash
-cp .env.example .env
-```
-#### Edit .env file with your database credentials
+   ```bash
+   cd app/backend
+   ```
 
-#### Run migrations
-```bash
-alembic upgrade head
-```
-#### Start the server
-```bash
-uvicorn main:app --reload
-```
+2. **Create and activate a virtual environment:**
+
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+   ```
+
+3. **Install dependencies:**
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Configure environment variables:**
+
+   Create a `.env` file in the backend directory with the following variables:
+   ```
+   # Database connection
+   DATABASE_URL=sqlite:///./family_vine.db
+
+   # JWT settings
+   SECRET_KEY=your-secret-key-change-this-in-production
+   ALGORITHM=HS256
+   ACCESS_TOKEN_EXPIRE_MINUTES=10080  # 1 week
+
+   # CORS settings
+   BACKEND_CORS_ORIGINS=["http://localhost:3000"]
+
+   # File upload settings
+   UPLOAD_DIRECTORY=./uploads
+   ```
+
+5. **Start the backend server:**
+
+   ```bash
+   uvicorn main:app --reload
+   ```
+
+   The API will be available at [http://localhost:8000](http://localhost:8000).
 
 ### Frontend Setup
-#### Navigate to frontend directory
-```bash
-cd ../frontend
-```
-#### Install dependencies
-```bash
-npm install
-```
-#### Configure environment
-```bash
-cp .env.example .env
-```
-#### Edit .env file with your API URL
 
-#### Start development server
-```bash
-npm start
-```
+1. **Navigate to the frontend directory:**
+
+   ```bash
+   cd app/frontend
+   ```
+
+2. **Install dependencies:**
+
+   ```bash
+   npm install
+   ```
+
+3. **Start the frontend development server:**
+
+   ```bash
+   npm start
+   ```
+
+   The frontend will be available at [http://localhost:3000](http://localhost:3000).
+
+## API Documentation
+
+Once the backend server is running, you can access the interactive API documentation at:
+- Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
+- ReDoc: [http://localhost:8000/redoc](http://localhost:8000/redoc)
 
 ## API Endpoints
-The app exposes the following main API endpoints:
 
-- Authentication: /api/auth/*
-- Users: /api/users/*
-- Documents: /api/documents/*
-- Metadata: /api/documents/{id}/metadata
-- People: /api/people/*
-- Relationships: /api/relationships/*
-- Visualization: /api/visualization/*
+The Family Vine API is organized into the following resource categories:
 
-See the API documentation for more details.
+- **Authentication**: `/api/auth/*`
+  - POST `/api/auth/register` - Register a new user
+  - POST `/api/auth/login` - Log in and obtain JWT token
+  - GET `/api/auth/me` - Get current user information
+
+- **Users**: `/api/users/*`
+  - PUT `/api/users/me` - Update current user profile
+
+- **Documents**: `/api/documents/*`
+  - POST `/api/documents/` - Upload a new document
+  - GET `/api/documents/` - List all user documents
+  - GET `/api/documents/{id}` - Get document details
+  - PUT `/api/documents/{id}` - Update document details
+  - DELETE `/api/documents/{id}` - Delete a document
+  - GET `/api/documents/{id}/download` - Download document file
+
+- **Metadata**: `/api/documents/{id}/metadata`
+  - POST `/api/documents/{id}/metadata` - Add metadata to document
+  - GET `/api/documents/{id}/metadata` - Get document metadata
+  - PUT `/api/documents/{id}/metadata` - Update document metadata
+  - DELETE `/api/documents/{id}/metadata` - Delete document metadata
+
+- **People**: `/api/people/*`
+  - POST `/api/people/` - Create a new person
+  - GET `/api/people/` - List all people
+  - GET `/api/people/{id}` - Get person details
+  - PUT `/api/people/{id}` - Update person details
+  - DELETE `/api/people/{id}` - Delete a person
+
+- **Relationships**: `/api/relationships/*`
+  - POST `/api/relationships/` - Create a relationship between people
+  - GET `/api/relationships/` - List all relationships
+  - GET `/api/relationships/{id}` - Get relationship details
+  - PUT `/api/relationships/{id}` - Update relationship details
+  - DELETE `/api/relationships/{id}` - Delete a relationship
+
+- **Visualization**: `/api/visualization/*` (Coming soon)
 
 ## Database Schema
-The database consists of the following main tables:
 
-- Users: Store user information
-- Documents: Track uploaded files
-- Metadata: Store 5W information for documents
-- People: Track people in the user's network
-- Relationships: Define relationships between users and people
-- DocumentPerson: Connect documents to people
+The database schema includes the following main entities:
 
-## Directory Structure
+- **Users**: Store user account information
+- **Documents**: Track uploaded files and their properties
+- **Metadata**: Store document metadata (who, what, when, where, why)
+- **People**: Store information about individuals in a family network
+- **Relationships**: Define connections between people
+- **DocumentPerson**: Link documents to relevant people
+
+## Project Structure
 
 ```
 |── backend/
@@ -166,11 +203,11 @@ npm test
 ```
 
 ## License
-__MIT License__
 
 ## Contributors
 
 Luis Guillen luis.a.guillen.arcos-1@ou.edu
 John Cervantes john.f.cervantes-1@ou.edu
 Umar Mian umian3@ou.edu
+Samuel Lupton samuel@ou.edu
 Your Name your.email@example.com
