@@ -111,7 +111,7 @@ def update_document(
         )
     
     # Update fields
-    for field, value in document_in.dict(exclude_unset=True).items():
+    for field, value in document_in.model_dump(exclude_unset=True).items():
         setattr(document, field, value)
     
     db.add(document)
