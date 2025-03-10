@@ -1,2 +1,4 @@
 venv/
 UPLOAD_DIRECTORY
+family_vine.db
+**/__pycache__
