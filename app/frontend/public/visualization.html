@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Timeline with Hanging Images and Date Tooltip</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    }
+    /* Timeline container with a vertical line */
+    .timeline {
+      position: relative;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 0;
+      border-left: 2px solid #ccc;
+    }
+    /* Each timeline event */
+    .timeline-event {
+      position: relative;
+      margin: 20px 0;
+      padding: 10px 20px;
+      padding-left: 70px; /* leave room for the hanging image */
+      background: #fff;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    /* Circular marker on the timeline */
+    .timeline-event::before {
+      content: "";
+      position: absolute;
+      left: 20px;
+      top: 15px;
+      width: 20px;
+      height: 20px;
+      background: #fff;
+      border: 2px solid #6a9fb5;
+      border-radius: 50%;
+    }
+    .timeline-event h3 {
+      margin: 0;
+      font-size: 18px;
+      color: #333;
+    }
+    .timeline-event p {
+      margin: 5px 0;
+      color: #666;
+    }
+    /* The hanging image positioned to the left */
+    .hanging-image {
+      position: absolute;
+      left: -110px; /* adjust to control how far the image hangs off */
+      top: 0;
+      width: 100px;
+      border: 2px solid #ccc;
+      border-radius: 4px;
+      background: #fff;
+      padding: 2px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .hanging-image img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    /* Tooltip styling: initially hidden, then shown on hover */
+    .tooltip {
+      position: absolute;
+      left: 100%;  /* appear to the right of the event box */
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      padding: 4px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      margin-left: 10px;
+    }
+    /* When hovering over an event, show the tooltip */
+    .timeline-event:hover .tooltip {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="timeline">
+    <!-- Timeline Event 1 -->
+    <div class="timeline-event" data-date="2023-01-01">
+      <div class="hanging-image">
+        <img src="https://via.placeholder.com/100?text=Image+1" alt="pic 3">
+      </div>
+      <h3>Event 3</h3>
+      <p>Date goes here.</p>
+      <!-- Tooltip that shows the event date -->
+      <div class="tooltip">2023-01-01</div>
+    </div>
+    
+    <!-- Timeline Event 2 -->
+    <div class="timeline-event" data-date="2023-02-01">
+      <div class="hanging-image">
+        <img src="https://via.placeholder.com/100?text=Image+2" alt="pic 2">
+      </div>
+      <h3>Event 2</h3>
+      <p>Date goes here.</p>
+      <div class="tooltip">2023-02-01</div>
+    </div>
+    
+    <!-- Timeline Event 3 -->
+    <div class="timeline-event" data-date="2023-03-01">
+      <div class="hanging-image">
+        <img src="https://via.placeholder.com/100?text=Image+3" alt="pic 1">
+      </div>
+      <h3>Event 1</h3>
+      <p>Date goes here.</p>
+      <div class="tooltip">2023-03-01</div>
+    </div>
+  </div>
+
+  <script>
+    // Optional JavaScript to dynamically set tooltip text based on the data-date attribute.
+    // This ensures that if you change the data-date, the tooltip is automatically updated.
+    document.querySelectorAll('.timeline-event').forEach(eventEl => {
+      const tooltip = eventEl.querySelector('.tooltip');
+      const date = eventEl.getAttribute('data-date');
+      tooltip.textContent = date;
+    });
+  </script>
+</body>
+</html>
