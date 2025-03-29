@@ -8,7 +8,7 @@ from api.dependencies import get_current_active_user
 from db.session import get_db
 from models.user import User
 from models.document import Document
-from schemas.document import Document as DocumentSchema, DocumentCreate, DocumentUpdate, DocumentWithDownloadUrl
+from schemas.document import Document as DocumentSchema, DocumentCreate, DocumentUpdate, DocumentWithDownloadUrl, DocumentVisualize
 from services.file_service import FileService
 
 router = APIRouter()
@@ -43,8 +43,26 @@ async def upload_document(
     
     return document
 
+@router.post("/{person_id}/{document_id}", response_model=DocumentSchema)
+async def connect_person_to_document(
+    *,
+    db: Session = Depends(get_db),
+    person_id: int,
+    document_id: int,
+) -> Any:
+    """
+    Connect a person to a document
+    """
+    document = await FileService.connect_person_to_document(
+        db=db,
+        person_id=person_id,
+        document_id=document_id
+    )
+    
+    return document
+
 @router.get("/", response_model=List[DocumentSchema])
-def get_documents(
+def get_user_documents(
     *,
     db: Session = Depends(get_db),
     skip: int = 0,
@@ -52,13 +70,45 @@ def get_documents(
     current_user: User = Depends(get_current_active_user)
 ) -> Any:
     """
-    Get all documents for the current user
+    Get all documents uploaded by the current user
     """
     documents = FileService.get_documents_for_user(
         db=db,
         user_id=current_user.id,
         skip=skip,
         limit=limit
+    )
+    
+    return documents
+
+@router.get("/{person_id}", response_model=List[DocumentSchema])
+def get_person_documents(
+    *,
+    person_id: int,
+    db: Session = Depends(get_db),
+) -> Any:
+    """
+    Get all documents a person is connected to
+    """
+    documents = FileService.get_documents_for_person(
+        db=db,
+        person_id=person_id,
+    )
+    
+    return documents
+
+@router.get("/{person_id}", response_model=List[DocumentVisualize])
+def get_person_documents_for_visualization(
+    *,
+    person_id: int,
+    db: Session = Depends(get_db),
+) -> Any:
+    """
+    Get all documents connected to a person - strictly returning document ID, title, and description
+    """
+    documents = FileService.get_person_documents_for_visualization(
+        db=db,
+        person_id=person_id,
     )
     
     return documents
@@ -75,6 +125,32 @@ def get_document(
     """
     document = FileService.get_document_by_id(
         db=db,
+        document_id=document_id,
+        user_id=current_user.id
+    )
+    
+    if not document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found"
+        )
+    
+    return document
+
+@router.get("/{person_id}/{document_id}", response_model=DocumentSchema)
+def get_person_document(
+    *,
+    db: Session = Depends(get_db),
+    person_id: int,
+    document_id: int,
+    current_user: User = Depends(get_current_active_user)
+) -> Any:
+    """
+    Get document connected to a person by ID
+    """
+    document = FileService.get_person_document_by_id(
+        db=db,
+        person_id=person_id,
         document_id=document_id,
         user_id=current_user.id
     )
@@ -166,6 +242,47 @@ def download_document(
     """
     document = FileService.get_document_by_id(
         db=db,
+        document_id=document_id,
+        user_id=current_user.id
+    )
+    
+    if not document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found"
+        )
+    
+    file_path = FileService.get_file_path(document)
+    
+    if not os.path.exists(file_path):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="File not found on server"
+        )
+    
+    # Get original filename from path
+    original_filename = os.path.basename(document.file_path).split("_", 1)[1]
+    
+    return FileResponse(
+        path=file_path,
+        filename=original_filename,
+        media_type=document.file_type
+    )
+
+@router.get("/{person_id}/{document_id}/download")
+def download_document_by_person(
+    *,
+    db: Session = Depends(get_db),
+    person_id: int,
+    document_id: int,
+    current_user: User = Depends(get_current_active_user)
+) -> Any:
+    """
+    Download document file by person id
+    """
+    document = FileService.get_person_document_by_id(
+        db=db,
+        person_id=person_id,
         document_id=document_id,
         user_id=current_user.id
     )
