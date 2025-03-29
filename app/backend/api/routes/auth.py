@@ -9,6 +9,7 @@ from config import settings
 from core.security import create_access_token, get_password_hash, verify_password
 from db.session import get_db
 from models.user import User
+from models.person import Person
 from schemas.token import Token
 from schemas.user import User as UserSchema, UserCreate, UserInDB
 from api.dependencies import get_current_active_user
@@ -57,9 +58,18 @@ async def register(
         hashed_password=get_password_hash(user_in.password),
         full_name=user_in.full_name,
     )
+
+    # Create person entry for user
+    user_person = Person(
+        name=user_in.full_name,
+        description="User"
+    )
     db.add(user)
     db.commit()
     db.refresh(user)
+    db.add(user_person)
+    db.commit()
+    db.refresh(user_person)
     
     return user
 

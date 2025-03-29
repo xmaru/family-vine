@@ -30,3 +30,6 @@ class Document(DocumentInDBBase):
 
 class DocumentWithDownloadUrl(Document):
     download_url: str
+
+class DocumentVisualize(DocumentBase):
+    id: int

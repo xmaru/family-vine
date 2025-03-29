@@ -2,12 +2,12 @@ import os
 import shutil
 import uuid
 from fastapi import UploadFile
-from typing import List, Optional
+from typing import Dict, List, Optional
 from sqlalchemy.orm import Session
 
 from config import settings
 from models.document import Document
-from models.user import User
+from models.person import Person
 
 class FileService:
     @staticmethod
@@ -98,13 +98,63 @@ class FileService:
     @staticmethod
     def get_documents_for_user(db: Session, user_id: int, skip: int = 0, limit: int = 100) -> List[Document]:
         """
-        Get all documents for a user
+        Get all documents the user has uploaded
         """
         return db.query(Document).filter(Document.user_id == user_id).offset(skip).limit(limit).all()
     
     @staticmethod
+    def get_documents_for_person(db: Session, person_id: int) -> List[Document]:
+        """
+        Get all documents a person is connected to
+        """
+        person = db.query(Person).filter(Person.id == person_id).first()
+        if not person:
+            raise ValueError("Person not found")
+        
+        return [doc for doc in person.documents] 
+      
+    @staticmethod
     def get_document_by_id(db: Session, document_id: int, user_id: int) -> Optional[Document]:
         """
-        Get a document by ID for a specific user
+        Get a document by ID uploaded by the user
         """
         return db.query(Document).filter(Document.id == document_id, Document.user_id == user_id).first()
+    
+    def get_person_document_by_id(db: Session, person_id: int, document_id: int) -> Optional[Document]:
+        """
+        Get a document by ID connected to a specific person
+        """
+        person = db.query(Person).filter(Person.id == person_id).first()
+        if not person:
+            raise ValueError("Person not found")
+        
+        return next((doc for doc in person.documents if doc.id == document_id), None)
+    
+    @staticmethod
+    def get_person_documents_for_visualization(db: Session, person_id: int) -> List[Dict[str, str]]:
+        """
+        Get all documents connected to a person - strictly returning document ID, title, and description
+        """
+        person = db.query(Person).filter(Person.id == person_id).first()
+        if not person:
+            raise ValueError("Person not found")
+        
+        return [
+            {"id": doc.id, "title": doc.title, "description": doc.description}
+            for doc in person.documents
+        ]
+    
+    @staticmethod
+    def connect_person_to_document(db: Session, person_id: int, document_id: int) -> None:
+        """
+        Connects a person to a document by adding an entry to the document_person association table
+        """
+        person = db.query(Person).filter(Person.id == person_id).first()
+        document = db.query(Document).filter(Document.id == document_id).first()
+        
+        if not person or not document:
+            raise ValueError("Person or Document not found")
+        
+        if document not in person.documents:
+            person.documents.append(document)
+            db.commit()
