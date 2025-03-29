@@ -146,7 +146,7 @@ def get_person_document(
     current_user: User = Depends(get_current_active_user)
 ) -> Any:
     """
-    Get document by ID
+    Get document connected to a person by ID
     """
     document = FileService.get_person_document_by_id(
         db=db,
@@ -269,7 +269,7 @@ def download_document(
         media_type=document.file_type
     )
 
-@router.get("/{person_id}{document_id}/download")
+@router.get("/{person_id}/{document_id}/download")
 def download_document_by_person(
     *,
     db: Session = Depends(get_db),
@@ -278,7 +278,7 @@ def download_document_by_person(
     current_user: User = Depends(get_current_active_user)
 ) -> Any:
     """
-    Download document file 
+    Download document file by person id
     """
     document = FileService.get_person_document_by_id(
         db=db,
