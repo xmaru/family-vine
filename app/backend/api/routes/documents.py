@@ -1,3 +1,13 @@
+"""API routes for document management in the Family Vine application.
+
+This module provides endpoints for managing documents, including uploading, downloading,
+connecting documents to persons, and managing document metadata. It handles file operations
+and document-person relationships through a RESTful API interface.
+
+The module integrates with the database through SQLAlchemy and provides file handling
+capabilities through the FileService.
+"""
+
 from typing import List, Any
 import os
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, status, Response
@@ -22,8 +32,20 @@ async def upload_document(
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_active_user)
 ) -> Any:
-    """
-    Upload a new document
+    """Upload a new document to the system.
+
+    Args:
+        db (Session): Database session.
+        title (str): Title of the document.
+        description (str, optional): Description of the document.
+        file (UploadFile): The file to be uploaded.
+        current_user (User): Currently authenticated user.
+
+    Returns:
+        DocumentSchema: The created document object.
+
+    Raises:
+        HTTPException: If no file is provided (400 Bad Request).
     """
     # Check if file was provided
     if not file:
@@ -50,8 +72,15 @@ async def connect_person_to_document(
     person_id: int,
     document_id: int,
 ) -> Any:
-    """
-    Connect a person to a document
+    """Connect a document to a person in the family tree.
+
+    Args:
+        db (Session): Database session.
+        person_id (int): ID of the person to connect the document to.
+        document_id (int): ID of the document to connect.
+
+    Returns:
+        DocumentSchema: The updated document object with person connection.
     """
     document = await FileService.connect_person_to_document(
         db=db,
@@ -69,8 +98,16 @@ def get_user_documents(
     limit: int = 100,
     current_user: User = Depends(get_current_active_user)
 ) -> Any:
-    """
-    Get all documents uploaded by the current user
+    """Retrieve all documents uploaded by the current user.
+
+    Args:
+        db (Session): Database session.
+        skip (int, optional): Number of records to skip. Defaults to 0.
+        limit (int, optional): Maximum number of records to return. Defaults to 100.
+        current_user (User): Currently authenticated user.
+
+    Returns:
+        List[DocumentSchema]: List of documents belonging to the current user.
     """
     documents = FileService.get_documents_for_user(
         db=db,
@@ -87,8 +124,14 @@ def get_person_documents(
     person_id: int,
     db: Session = Depends(get_db),
 ) -> Any:
-    """
-    Get all documents a person is connected to
+    """Retrieve all documents connected to a specific person.
+
+    Args:
+        person_id (int): ID of the person whose documents to retrieve.
+        db (Session): Database session.
+
+    Returns:
+        List[DocumentSchema]: List of documents connected to the specified person.
     """
     documents = FileService.get_documents_for_person(
         db=db,
@@ -103,8 +146,17 @@ def get_person_documents_for_visualization(
     person_id: int,
     db: Session = Depends(get_db),
 ) -> Any:
-    """
-    Get all documents connected to a person - strictly returning document ID, title, and description
+    """Retrieve documents connected to a person for visualization purposes.
+
+    This endpoint returns a simplified version of documents containing only
+    essential fields (ID, title, and description) for visualization.
+
+    Args:
+        person_id (int): ID of the person whose documents to retrieve.
+        db (Session): Database session.
+
+    Returns:
+        List[DocumentVisualize]: List of simplified document objects for visualization.
     """
     documents = FileService.get_person_documents_for_visualization(
         db=db,
@@ -120,8 +172,18 @@ def get_document(
     document_id: int,
     current_user: User = Depends(get_current_active_user)
 ) -> Any:
-    """
-    Get document by ID
+    """Retrieve a specific document by its ID.
+
+    Args:
+        db (Session): Database session.
+        document_id (int): ID of the document to retrieve.
+        current_user (User): Currently authenticated user.
+
+    Returns:
+        DocumentSchema: The requested document object.
+
+    Raises:
+        HTTPException: If document is not found (404 Not Found).
     """
     document = FileService.get_document_by_id(
         db=db,
@@ -145,8 +207,19 @@ def get_person_document(
     document_id: int,
     current_user: User = Depends(get_current_active_user)
 ) -> Any:
-    """
-    Get document connected to a person by ID
+    """Retrieve a specific document connected to a person.
+
+    Args:
+        db (Session): Database session.
+        person_id (int): ID of the person connected to the document.
+        document_id (int): ID of the document to retrieve.
+        current_user (User): Currently authenticated user.
+
+    Returns:
+        DocumentSchema: The requested document object.
+
+    Raises:
+        HTTPException: If document is not found (404 Not Found).
     """
     document = FileService.get_person_document_by_id(
         db=db,
@@ -171,8 +244,19 @@ def update_document(
     document_in: DocumentUpdate,
     current_user: User = Depends(get_current_active_user)
 ) -> Any:
-    """
-    Update document metadata
+    """Update the metadata of an existing document.
+
+    Args:
+        db (Session): Database session.
+        document_id (int): ID of the document to update.
+        document_in (DocumentUpdate): Updated document data.
+        current_user (User): Currently authenticated user.
+
+    Returns:
+        DocumentSchema: The updated document object.
+
+    Raises:
+        HTTPException: If document is not found (404 Not Found).
     """
     document = FileService.get_document_by_id(
         db=db,
@@ -204,8 +288,16 @@ def delete_document(
     current_user: User = Depends(get_current_active_user),
     response: Response
 ) -> None:
-    """
-    Delete document
+    """Delete a document and its associated file.
+
+    Args:
+        db (Session): Database session.
+        document_id (int): ID of the document to delete.
+        current_user (User): Currently authenticated user.
+        response (Response): FastAPI response object.
+
+    Raises:
+        HTTPException: If document is not found (404 Not Found).
     """
     document = FileService.get_document_by_id(
         db=db,
@@ -237,8 +329,18 @@ def download_document(
     document_id: int,
     current_user: User = Depends(get_current_active_user)
 ) -> Any:
-    """
-    Download document file
+    """Download a document file.
+
+    Args:
+        db (Session): Database session.
+        document_id (int): ID of the document to download.
+        current_user (User): Currently authenticated user.
+
+    Returns:
+        FileResponse: The document file as a downloadable response.
+
+    Raises:
+        HTTPException: If document or file is not found (404 Not Found).
     """
     document = FileService.get_document_by_id(
         db=db,
@@ -277,8 +379,19 @@ def download_document_by_person(
     document_id: int,
     current_user: User = Depends(get_current_active_user)
 ) -> Any:
-    """
-    Download document file by person id
+    """Download a document file that is connected to a specific person.
+
+    Args:
+        db (Session): Database session.
+        person_id (int): ID of the person connected to the document.
+        document_id (int): ID of the document to download.
+        current_user (User): Currently authenticated user.
+
+    Returns:
+        FileResponse: The document file as a downloadable response.
+
+    Raises:
+        HTTPException: If document or file is not found (404 Not Found).
     """
     document = FileService.get_person_document_by_id(
         db=db,

@@ -1,3 +1,12 @@
+"""
+Person API router module.
+
+This module provides endpoints for managing person entities in the application.
+It includes CRUD operations (Create, Read, Update, Delete) for person records,
+with each operation requiring authentication and ensuring users can only access
+their own person records.
+"""
+
 from typing import List, Any
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -17,8 +26,15 @@ def create_person(
     person_in: PersonCreate,
     current_user: User = Depends(get_current_active_user),
 ) -> Any:
-    """
-    Create a new person associated with the current user.
+    """Create a new person associated with the current user.
+    
+    Args:
+        db: Database session.
+        person_in: Person data for creation.
+        current_user: Currently authenticated user.
+        
+    Returns:
+        The created person object.
     """
     person = Person(
         name=person_in.name,
@@ -39,8 +55,16 @@ def get_people(
     limit: int = 100, # Limits the result set to specified # of rows.
     current_user: User = Depends(get_current_active_user),
 ) -> Any:
-    """
-    Retrieve a list of people associated with the current user.
+    """Retrieve a list of people associated with the current user.
+    
+    Args:
+        db: Database session.
+        skip: Number of records to skip (for pagination).
+        limit: Maximum number of records to return.
+        current_user: Currently authenticated user.
+        
+    Returns:
+        List of person objects belonging to the current user.
     """
     people = db.query(Person).filter(Person.user_id == current_user.id).offset(skip).limit(limit).all()
     return people
@@ -52,8 +76,18 @@ def get_person(
     person_id: int,
     current_user: User = Depends(get_current_active_user),
 ) -> Any:
-    """
-    Retrieve a specific person by ID if owned by the current user.
+    """Retrieve a specific person by ID if owned by the current user.
+    
+    Args:
+        db: Database session.
+        person_id: ID of the person to retrieve.
+        current_user: Currently authenticated user.
+        
+    Returns:
+        The requested person object.
+        
+    Raises:
+        HTTPException: If the person is not found or not owned by the current user.
     """
     person = db.query(Person).filter(Person.id == person_id, Person.user_id == current_user.id).first()
 
@@ -73,8 +107,19 @@ def update_person(
     person_in: PersonUpdate,
     current_user: User = Depends(get_current_active_user),
 ) -> Any:
-    """
-    Update a person if owned by the current user.
+    """Update a person if owned by the current user.
+    
+    Args:
+        db: Database session.
+        person_id: ID of the person to update.
+        person_in: Updated person data.
+        current_user: Currently authenticated user.
+        
+    Returns:
+        The updated person object.
+        
+    Raises:
+        HTTPException: If the person is not found or not owned by the current user.
     """
     person = db.query(Person).filter(Person.id == person_id, Person.user_id == current_user.id).first()
 
@@ -100,8 +145,18 @@ def delete_person(
     person_id: int,
     current_user: User = Depends(get_current_active_user),
 ) -> Any:
-    """
-    Delete a person if owned by the current user.
+    """Delete a person if owned by the current user.
+    
+    Args:
+        db: Database session.
+        person_id: ID of the person to delete.
+        current_user: Currently authenticated user.
+        
+    Returns:
+        A message confirming the deletion.
+        
+    Raises:
+        HTTPException: If the person is not found or not owned by the current user.
     """
     person = db.query(Person).filter(Person.id == person_id, Person.user_id == current_user.id).first()
 

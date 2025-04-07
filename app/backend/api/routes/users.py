@@ -7,7 +7,19 @@ from models.user import User
 from schemas.user import User as UserSchema, UserUpdate
 from api.dependencies import get_current_active_user
 
-router = APIRouter()
+"""
+User API routes module.
+
+This module provides endpoints for user-related operations such as updating
+user profiles and managing user accounts. It uses FastAPI for routing and
+SQLAlchemy for database operations.
+"""
+
+router = APIRouter(
+    prefix="/users",
+    tags=["users"],
+    responses={404: {"description": "Not found"}},
+)
 
 @router.put("/me", response_model=UserSchema)
 def update_current_user(
@@ -16,8 +28,21 @@ def update_current_user(
     user_in: UserUpdate,
     current_user: User = Depends(get_current_active_user),
 ) -> Any:
-    """
-    Update the current user's profile
+    """Update the current user's profile.
+    
+    This endpoint allows authenticated users to update their own profile information.
+    Only fields that are provided in the request will be updated.
+    
+    Args:
+        db: Database session dependency.
+        user_in: User data to update.
+        current_user: Currently authenticated user.
+        
+    Returns:
+        Updated user object.
+        
+    Raises:
+        HTTPException: If the user is not authenticated or if the update fails.
     """
     for field, value in user_in.model_dump(exclude_unset=True).items():
         setattr(current_user, field, value)

@@ -11,6 +11,14 @@ from schemas.token import TokenPayload
 from models.user import User
 from config import settings
 
+"""
+Authentication and authorization dependencies for the FastAPI application.
+
+This module provides dependency functions for user authentication and authorization
+using JWT tokens. It includes functions to retrieve the current user from a JWT token
+and to verify that the user is active.
+"""
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 def get_current_user(
@@ -18,7 +26,20 @@ def get_current_user(
     token: str = Depends(oauth2_scheme)
 ) -> User:
     """
-    Get the current user from JWT token
+    Retrieve the current user from a JWT token.
+    
+    This function decodes the JWT token, validates it, and retrieves the corresponding
+    user from the database.
+    
+    Args:
+        db: Database session.
+        token: JWT token from the request.
+        
+    Returns:
+        User: The user object corresponding to the token.
+        
+    Raises:
+        HTTPException: If the token is invalid or the user is not found.
     """
     try:
         payload = jwt.decode(
@@ -44,7 +65,19 @@ def get_current_active_user(
     current_user: User = Depends(get_current_user),
 ) -> User:
     """
-    Get the current active user
+    Verify and return the current active user.
+    
+    This function checks if the current user is active and returns it.
+    It depends on get_current_user to retrieve the user first.
+    
+    Args:
+        current_user: The user object retrieved by get_current_user.
+        
+    Returns:
+        User: The active user object.
+        
+    Raises:
+        HTTPException: If the user is inactive.
     """
     if not current_user.is_active:
         raise HTTPException(

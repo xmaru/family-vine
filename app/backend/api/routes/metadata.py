@@ -1,3 +1,11 @@
+"""
+API routes for managing document metadata.
+
+This module provides endpoints for creating, retrieving, updating, and deleting
+metadata associated with documents. All operations require authentication and
+are restricted to users who own the associated documents.
+"""
+
 from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -21,7 +29,20 @@ def create_metadata(
     current_user: User = Depends(get_current_active_user)  # Use in routes where we want to restrict metadata access to only documents the user owns
 ) -> Any:
     """
-    Create metadata for a document where the document belongs to the current user.
+    Create metadata for a document.
+    
+    Args:
+        db: Database session.
+        document_id: ID of the document to create metadata for.
+        metadata_in: Metadata data to create.
+        current_user: Currently authenticated user.
+        
+    Returns:
+        The created metadata object.
+        
+    Raises:
+        HTTPException: If the user is not authorized to modify the document or
+            if metadata already exists for the document.
     """
     document = db.query(Document).filter(Document.id == document_id, Document.user_id == current_user.id).first()
     if not document:
@@ -47,7 +68,19 @@ def get_metadata(
     current_user: User = Depends(get_current_active_user)
 ) -> Any:
     """
-    Retrieve metadata for a document where the document belongs to the current user.
+    Retrieve metadata for a document.
+    
+    Args:
+        db: Database session.
+        document_id: ID of the document to retrieve metadata for.
+        current_user: Currently authenticated user.
+        
+    Returns:
+        The metadata object associated with the document.
+        
+    Raises:
+        HTTPException: If the user is not authorized to access the document or
+            if metadata is not found for the document.
     """
     document = db.query(Document).filter(Document.id == document_id, Document.user_id == current_user.id).first()
     if not document:
@@ -68,7 +101,20 @@ def update_metadata(
     current_user: User = Depends(get_current_active_user)
 ) -> Any:
     """
-    Update metadata for a document where the document belongs to the current user.
+    Update metadata for a document.
+    
+    Args:
+        db: Database session.
+        document_id: ID of the document to update metadata for.
+        metadata_in: Updated metadata data.
+        current_user: Currently authenticated user.
+        
+    Returns:
+        The updated metadata object.
+        
+    Raises:
+        HTTPException: If the user is not authorized to modify the document or
+            if metadata is not found for the document.
     """
     document = db.query(Document).filter(Document.id == document_id, Document.user_id == current_user.id).first()
     if not document:
@@ -95,7 +141,19 @@ def delete_metadata(
     current_user: User = Depends(get_current_active_user)
 ) -> None:
     """
-    Delete metadata for a document where the document belongs to the current user.
+    Delete metadata for a document.
+    
+    Args:
+        db: Database session.
+        document_id: ID of the document to delete metadata for.
+        current_user: Currently authenticated user.
+        
+    Returns:
+        A dictionary with a success message.
+        
+    Raises:
+        HTTPException: If the user is not authorized to delete the document's metadata or
+            if metadata is not found for the document.
     """
     document = db.query(Document).filter(Document.id == document_id, Document.user_id == current_user.id).first()
     if not document:

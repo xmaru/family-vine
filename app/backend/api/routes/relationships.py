@@ -1,3 +1,11 @@
+"""
+FastAPI router for managing relationships between people in a family tree.
+
+This module provides endpoints for creating, reading, updating, and deleting
+relationships between people. All operations are scoped to the currently
+authenticated user.
+"""
+
 from typing import List, Any
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -26,6 +34,17 @@ def create_relationship(
 ) -> Any:
     """
     Create a new relationship between two people owned by the current user.
+
+    Args:
+        db: Database session.
+        relationship_in: Relationship data to create.
+        current_user: Currently authenticated user.
+
+    Returns:
+        The created relationship.
+
+    Raises:
+        HTTPException: If one or both people are not found or don't belong to the user.
     """
     # both persons exist and belong to the user
     person_1 = db.query(Person).filter(Person.id == relationship_in.person_id_1, Person.user_id == current_user.id).first()
@@ -59,6 +78,15 @@ def get_relationships(
 ) -> Any:
     """
     Get all relationships associated with the current user.
+
+    Args:
+        db: Database session.
+        skip: Number of records to skip (for pagination).
+        limit: Maximum number of records to return (for pagination).
+        current_user: Currently authenticated user.
+
+    Returns:
+        A list of relationships with associated person details.
     """
     relationships = (
         db.query(Relationship).filter(Relationship.user_id == current_user.id).offset(skip).limit(limit).all()
@@ -75,6 +103,17 @@ def get_relationship(
 ) -> Any:
     """
     Get a specific relationship by ID if owned by the current user.
+
+    Args:
+        db: Database session.
+        relationship_id: ID of the relationship to retrieve.
+        current_user: Currently authenticated user.
+
+    Returns:
+        The requested relationship with associated person details.
+
+    Raises:
+        HTTPException: If the relationship is not found or doesn't belong to the user.
     """
     relationship = (
         db.query(Relationship).filter(Relationship.id == relationship_id, Relationship.user_id == current_user.id).first()
@@ -99,6 +138,18 @@ def update_relationship(
 ) -> Any:
     """
     Update a relationship if owned by the current user.
+
+    Args:
+        db: Database session.
+        relationship_id: ID of the relationship to update.
+        relationship_in: Updated relationship data.
+        current_user: Currently authenticated user.
+
+    Returns:
+        The updated relationship.
+
+    Raises:
+        HTTPException: If the relationship is not found or doesn't belong to the user.
     """
     relationship = (
         db.query(Relationship).filter(Relationship.id == relationship_id, Relationship.user_id == current_user.id).first()
@@ -129,6 +180,17 @@ def delete_relationship(
 ) -> Any:
     """
     Delete a relationship if owned by the current user.
+
+    Args:
+        db: Database session.
+        relationship_id: ID of the relationship to delete.
+        current_user: Currently authenticated user.
+
+    Returns:
+        A message confirming the deletion.
+
+    Raises:
+        HTTPException: If the relationship is not found or doesn't belong to the user.
     """
     relationship = (
         db.query(Relationship).filter(Relationship.id == relationship_id, Relationship.user_id == current_user.id).first()
