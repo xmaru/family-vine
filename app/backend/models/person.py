@@ -1,3 +1,9 @@
+"""Module defining the Person model and related database relationships.
+
+This module contains the SQLAlchemy model definition for Person entities and their
+relationships with other models in the system, particularly Documents and Users.
+"""
+
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Table
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -12,6 +18,24 @@ document_person = Table(
 )
 
 class Person(Base):
+    """A model representing a person in the system.
+
+    This class defines the structure and relationships for storing person-related
+    information in the database. Each person is associated with a user and can
+    have multiple documents.
+
+    Attributes:
+        id (int): Primary key identifier for the person.
+        name (str): The person's name.
+        birthday (str, optional): The person's birthday.
+        description (str, optional): Additional information about the person.
+        created_at (datetime): Timestamp when the person record was created.
+        updated_at (datetime): Timestamp when the person record was last updated.
+        user_id (int): Foreign key reference to the associated user.
+        user (User): Relationship to the associated User model.
+        documents (List[Document]): Many-to-many relationship with Document model.
+    """
+
     __tablename__ = "people"
 
     id = Column(Integer, primary_key=True, index=True)
