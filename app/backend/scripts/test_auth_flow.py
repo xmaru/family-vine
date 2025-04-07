@@ -1,9 +1,14 @@
 #!/usr/bin/env python
 """
-This script tests the full authentication flow:
-1. Register a user
-2. Login with that user
-3. Get user info with the token
+Test script for the complete authentication flow of the Family Vine application.
+
+This script tests the full authentication flow by:
+1. Registering a new user with random credentials
+2. Logging in with the newly created user
+3. Retrieving user information using the authentication token
+
+The script provides detailed output of each step in the process and
+verifies that the authentication flow works correctly.
 """
 import requests
 import json
@@ -13,12 +18,32 @@ import string
 import time
 
 def generate_random_string(length=6):
-    """Generate a random string of fixed length"""
+    """Generate a random string of fixed length.
+    
+    Args:
+        length (int, optional): The length of the random string to generate. 
+                               Defaults to 6.
+    
+    Returns:
+        str: A random string of lowercase letters with the specified length.
+    """
     letters = string.ascii_lowercase
     return ''.join(random.choice(letters) for i in range(length))
 
 def test_auth_flow(base_url):
-    """Test the complete authentication flow"""
+    """Test the complete authentication flow of the application.
+    
+    This function performs a full authentication test by:
+    1. Registering a new user with random credentials
+    2. Logging in with the newly created user
+    3. Retrieving user information using the authentication token
+    
+    Args:
+        base_url (str): The base URL of the API to test against.
+    
+    Returns:
+        bool: True if all authentication steps succeed, False otherwise.
+    """
     
     # Generate random credentials to avoid conflicts
     random_suffix = generate_random_string()
@@ -152,6 +177,10 @@ def test_auth_flow(base_url):
     return True
 
 def main():
+    """Main entry point for the authentication flow test script.
+    
+    Parses command line arguments and runs the authentication flow test.
+    """
     parser = argparse.ArgumentParser(description="Test the full authentication flow")
     parser.add_argument("--url", default="http://localhost:8000", help="Base URL of the API")
     

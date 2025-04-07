@@ -1,14 +1,36 @@
 #!/usr/bin/env python
 """
-This script creates a test user in the Family Vine application.
-Run it from the backend directory.
+Create a test user in the Family Vine application.
+
+This script provides functionality to create test users through the Family Vine API.
+It can be run from the command line with various parameters to customize the user creation.
+
+Example:
+    python create_test_user.py --email test@example.com --username testuser --password testpassword
+
+Note:
+    This script should be run from the backend directory.
 """
 import requests
 import json
 import argparse
 
 def create_test_user(base_url, email, username, password, full_name=None):
-    """Create a test user using the registration API"""
+    """Create a test user using the registration API.
+    
+    Args:
+        base_url (str): The base URL of the Family Vine API.
+        email (str): Email address for the test user.
+        username (str): Username for the test user.
+        password (str): Password for the test user.
+        full_name (str, optional): Full name for the test user. Defaults to None.
+    
+    Returns:
+        bool: True if user creation was successful, False otherwise.
+    
+    Raises:
+        requests.exceptions.RequestException: If there's an error with the API request.
+    """
     url = f"{base_url}/api/auth/register"
     
     user_data = {
@@ -41,6 +63,18 @@ def create_test_user(base_url, email, username, password, full_name=None):
         return False
 
 def main():
+    """Parse command line arguments and create a test user.
+    
+    This function sets up the argument parser with default values and calls
+    the create_test_user function with the provided arguments.
+    
+    Command line arguments:
+        --url: Base URL of the Family Vine API (default: http://localhost:8000)
+        --email: Email address for the test user (default: test@example.com)
+        --username: Username for the test user (default: testuser)
+        --password: Password for the test user (default: testpassword)
+        --full-name: Full name for the test user (default: Test User)
+    """
     parser = argparse.ArgumentParser(description="Create a test user for Family Vine")
     parser.add_argument("--url", default="http://localhost:8000", help="Base URL of the Family Vine API")
     parser.add_argument("--email", default="test@example.com", help="Email address for the test user")
