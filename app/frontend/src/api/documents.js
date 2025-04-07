@@ -1,9 +1,9 @@
 import api from './index';
 
 /**
- * Upload a new document
- * @param {FormData} formData - Form data containing file, title, and description
- * @returns {Promise} - Promise with the uploaded document data
+ * Uploads a new document to the server
+ * @param {FormData} formData - Form data containing the file and metadata
+ * @returns {Promise} - Promise that resolves with the uploaded document data
  */
 export const uploadDocument = (formData) => {
   return api.post('/documents/', formData, {
@@ -14,46 +14,48 @@ export const uploadDocument = (formData) => {
 };
 
 /**
- * Get all documents for current user
- * @param {Object} params - Query parameters (skip, limit)
- * @returns {Promise} - Promise with the list of documents
+ * Retrieves a list of documents for the current user
+ * @param {Object} params - Query parameters for filtering and pagination
+ * @param {number} [params.skip] - Number of records to skip (for pagination)
+ * @param {number} [params.limit] - Maximum number of records to return
+ * @returns {Promise} - Promise that resolves with the list of documents
  */
 export const getDocuments = (params = {}) => {
   return api.get('/documents/', { params });
 };
 
 /**
- * Get document by ID
- * @param {number} id - Document ID
- * @returns {Promise} - Promise with the document data
+ * Retrieves a specific document by its ID
+ * @param {number} id - The unique identifier of the document
+ * @returns {Promise} - Promise that resolves with the document data
  */
 export const getDocument = (id) => {
   return api.get(`/documents/${id}`);
 };
 
 /**
- * Update document
- * @param {number} id - Document ID
- * @param {Object} data - Document data to update (title, description)
- * @returns {Promise} - Promise with the updated document data
+ * Updates an existing document
+ * @param {number} id - The unique identifier of the document to update
+ * @param {Object} data - The updated document data
+ * @returns {Promise} - Promise that resolves with the updated document data
  */
 export const updateDocument = (id, data) => {
   return api.put(`/documents/${id}`, data);
 };
 
 /**
- * Delete document
- * @param {number} id - Document ID
- * @returns {Promise} - Promise with the delete operation result
+ * Deletes a document by its ID
+ * @param {number} id - The unique identifier of the document to delete
+ * @returns {Promise} - Promise that resolves when the document is deleted
  */
 export const deleteDocument = (id) => {
   return api.delete(`/documents/${id}`);
 };
 
 /**
- * Get document download URL
- * @param {number} id - Document ID
- * @returns {string} - Document download URL
+ * Generates a download URL for a specific document
+ * @param {number} id - The unique identifier of the document
+ * @returns {string} - The URL that can be used to download the document
  */
 export const getDocumentDownloadUrl = (id) => {
   return `${api.defaults.baseURL}/documents/${id}/download`;

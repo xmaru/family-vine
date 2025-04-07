@@ -1,7 +1,20 @@
+/**
+ * @fileoverview API configuration and setup for the Family Vine application.
+ * This file configures axios with base URL, default headers, and authentication interceptors.
+ */
+
 import axios from "axios";
 
+/**
+ * Base URL for API requests. Falls back to localhost if environment variable is not set.
+ * @constant {string}
+ */
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000/api";
 
+/**
+ * Axios instance configured with base URL and default headers.
+ * @type {import('axios').AxiosInstance}
+ */
 const api = axios.create({
   baseURL: API_URL,
   headers: {
@@ -10,7 +23,10 @@ const api = axios.create({
   },
 });
 
-// Add a request interceptor for authentication
+/**
+ * Request interceptor that adds authentication token to requests.
+ * Automatically attaches the JWT token from localStorage to the Authorization header.
+ */
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -22,7 +38,12 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Add a response interceptor to handle authentication errors
+/**
+ * Response interceptor that handles authentication errors globally.
+ * - Clears invalid/expired tokens from localStorage
+ * - Redirects to login page on 401 Unauthorized errors
+ * - Excludes login and register pages from redirect
+ */
 api.interceptors.response.use(
   (response) => response,
   (error) => {
