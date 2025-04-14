@@ -6,6 +6,7 @@ from db.session import get_db
 from models.user import User
 from schemas.user import User as UserSchema, UserUpdate
 from api.dependencies import get_current_active_user
+from models import relationship
 
 """
 User API routes module.

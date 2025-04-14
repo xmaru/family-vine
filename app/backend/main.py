@@ -8,7 +8,13 @@ It also provides health check endpoints and startup event handlers.
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
+import sys
+from pathlib import Path
 
+# Add the parent directory to sys.path to properly resolve imports
+sys.path.append(str(Path(__file__).parent))
+
+from models import relationship
 from config import settings
 from db.session import engine
 from db.base import Base  # This should import all models
@@ -19,6 +25,11 @@ def create_tables():
     This function uses SQLAlchemy's create_all method to create all tables
     that are defined in the models imported through the Base class.
     """
+    # Import all models before creating tables
+    from db.base import import_all_models
+    import_all_models()
+    
+    # Now create the tables
     Base.metadata.create_all(bind=engine)
 
 def get_application():
@@ -46,11 +57,14 @@ def get_application():
     )
 
     # Import API routers here to avoid circular imports
-    from api.routes import auth, documents
+    from api.routes import auth, documents, person, relationship, metadata
 
     # Include routers
     _app.include_router(auth, prefix="/api/auth", tags=["auth"])
     _app.include_router(documents, prefix="/api/documents", tags=["documents"])
+    _app.include_router(person, prefix="/api/person", tags=["person"])
+    _app.include_router(relationship, prefix="/api/relationship", tags=["relationship"])
+    _app.include_router(metadata, prefix="/api/metadata", tags=["metadata"])
 
     return _app
 

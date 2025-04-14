@@ -3,9 +3,9 @@ from typing import Optional
 from pydantic import BaseModel
 
 class PersonBase(BaseModel):
-    name = str
-    birthday = Optional[str] = None
-    description = Optional[str] = None
+    name: str
+    birthday: Optional[str] = None
+    description: Optional[str] = None
 
 class PersonCreate(PersonBase):
     pass

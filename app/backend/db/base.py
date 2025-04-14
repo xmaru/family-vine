@@ -12,7 +12,13 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
 # Import all models here to ensure they are registered with SQLAlchemy
-from models.user import User
-from models.document import Document
-from models.metadata import Metadata
-from models.person import Person
+# These imports should happen at the module level but we're delaying them
+# to avoid circular dependencies
+
+# Import all models here when tables need to be created, not at module load time
+def import_all_models():
+    # Import models only when needed
+    from models.user import User
+    from models.document import Document  
+    from models.metadata import Metadata
+    from models.person import Person
