@@ -43,9 +43,10 @@ const Login = () => {
     try {
       setIsSubmitting(true);
       const success = await login({ email, password });
-      if (success) {
+      // if (success) {
+        localStorage.setItem("token", success.data.token);
         navigate('/dashboard');
-      }
+      // }
     } catch (err) {
       console.error('Login error:', err);
       setError('Invalid email or password');

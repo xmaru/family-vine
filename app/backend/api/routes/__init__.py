@@ -10,9 +10,9 @@ documents = documents_router
 # from api.routes.metadata import router as metadata_router
 # from api.routes.people import router as people_router
 # from api.routes.relationships import router as relationships_router
-# from api.routes.visualization import router as visualization_router
+from api.routes.visualization import router as visualization_router
 # 
 # metadata = metadata_router
 # people = people_router
 # relationships = relationships_router
-# visualization = visualization_router
+visualization = visualization_router
