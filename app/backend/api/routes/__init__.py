@@ -12,7 +12,6 @@ metadata = metadata_router
 person = person_router
 relationship = relationship_router
 
-# Once implemented, uncomment the following imports
-# from api.routes.visualization import router as visualization_router
-# 
-# visualization = visualization_router
+from api.routes.visualization import router as visualization_router
+ 
+visualization = visualization_router
