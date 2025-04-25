@@ -1,8 +1,11 @@
+// frontend/src/pages/VisualizationPage.js
+
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
+import Visualization from '../components/Visualization';  // <-- add this import
 
 const VisualizationPage = () => {
   const { user, loading } = useAuth();
@@ -28,7 +31,8 @@ const VisualizationPage = () => {
           </div>
           
           <div className="visualization-content">
-            <p>Visualization features coming soon...</p>
+            {/* Instead of "Visualization features coming soon...", render our actual timeline graph: */}
+            <Visualization />
           </div>
         </div>
       </main>
