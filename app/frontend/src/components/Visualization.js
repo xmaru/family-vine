@@ -81,23 +81,30 @@ function Visualization() {
     return <div>No vine data available.</div>;
   }
 
-  // Example: draw an SVG path with circles for each document
+  // Sort is not needed here since backend returns sorted by date (oldest to newest)
+  // Calculate positions for each document node
+  const nodePositions = vineData.map((doc, index) => ({
+    x: 100 + index * 200,
+    y: 300,
+  }));
+
+  // Create a string for the SVG polyline points to connect the nodes
+  // This draws the line between the files in chronological order
+  const polylinePoints = nodePositions.map(pos => `${pos.x},${pos.y}`).join(' ');
+
   return (
     <>
       <svg width="1000" height="600" style={{ backgroundColor: "white" }}>
-        <path
-          d="M 50 300
-             C 150 100, 350 100, 450 300
-             C 550 500, 750 500, 850 300"
+        {/* Draw the line connecting the document nodes */}
+        <polyline
+          points={polylinePoints}
           stroke="brown"
           strokeWidth="6"
           fill="none"
         />
+        {/* Draw the document nodes as circles */}
         {vineData.map((doc, index) => {
-          // Example logic: X is 100 + 200 * index
-          // Y is 300
-          const x = 100 + index * 200;
-          const y = 300;
+          const { x, y } = nodePositions[index];
           const dateLabel = doc.created_at
             ? new Date(doc.created_at).toISOString().slice(0, 10)
             : 'Unknown';
