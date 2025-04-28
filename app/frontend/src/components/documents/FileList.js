@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import useDocuments from "../../hooks/useDocuments";
 import { getMetadata } from "../../api/metadata";
 import "../../styles/components/FileList.css";
+import useAuth from "../../hooks/useAuth";
 
 const FileList = () => {
   const {
@@ -13,12 +14,14 @@ const FileList = () => {
     getDownloadUrl,
     fetchDocuments,
   } = useDocuments();
+  const { user } = useAuth();
   const [deleteInProgress, setDeleteInProgress] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [metadata, setMetadata] = useState(null);
   const [metadataLoading, setMetadataLoading] = useState(false);
   const [metadataError, setMetadataError] = useState("");
+  const [fileBlobUrl, setFileBlobUrl] = useState(null);
 
   /**
    * Handles document click: fetches metadata and opens modal.
@@ -101,6 +104,33 @@ const FileList = () => {
     return date.toLocaleDateString() + " " + date.toLocaleTimeString();
   };
 
+  // Fetch the file as a blob with Authorization when a document is selected
+  useEffect(() => {
+    if (!selectedDocument) {
+      setFileBlobUrl(null);
+      return;
+    }
+    // Get token from localStorage
+    const token = localStorage.getItem("token");
+    fetch(`http://localhost:8000/api/documents/${selectedDocument.id}/download`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch file");
+        return res.blob();
+      })
+      .then((blob) => {
+        setFileBlobUrl(URL.createObjectURL(blob));
+      })
+      .catch(() => setFileBlobUrl(null));
+    // Clean up blob URL on close
+    return () => {
+      if (fileBlobUrl) URL.revokeObjectURL(fileBlobUrl);
+    };
+  }, [selectedDocument]);
+
   if (loading) {
     return <div className="loading-indicator">Loading documents...</div>;
   }
@@ -154,15 +184,16 @@ const FileList = () => {
             <div className="file-size">{formatFileSize(document.file_size)}</div>
             <div className="file-date">{formatDate(document.created_at)}</div>
             <div className="file-actions">
-              <a
-                href={getDownloadUrl(document.id)}
-                className="btn btn-sm btn-secondary"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={e => e.stopPropagation()}
+              {/* Open button to open the modal */}
+              <button
+                className="btn btn-sm btn-primary"
+                onClick={e => {
+                  e.stopPropagation();
+                  handleDocumentClick(document);
+                }}
               >
-                Download
-              </a>
+                Open
+              </button>
               <button
                 className="btn btn-sm btn-danger"
                 onClick={e => {
@@ -209,10 +240,25 @@ const FileList = () => {
             }}
           >
             <h2>{selectedDocument.title}</h2>
-            {/* Optionally show an image if available */}
-            {selectedDocument.file_type && selectedDocument.file_type.startsWith("image/") && (
+            {/* Always show a download link for the file using the blob URL */}
+            {fileBlobUrl && (
+              <a
+                href={fileBlobUrl}
+                download={selectedDocument.title}
+                style={{ display: "block", marginBottom: "10px" }}
+                onClick={e => e.stopPropagation()}
+              >
+                Download file
+              </a>
+            )}
+            {/* Debug log for image preview */}
+            {fileBlobUrl && selectedDocument.file_type && (
+              console.log('Previewing:', selectedDocument.title, selectedDocument.file_type, fileBlobUrl)
+            )}
+            {/* Try to preview image if the file_type is an image */}
+            {fileBlobUrl && selectedDocument.file_type && selectedDocument.file_type.startsWith('image/') && (
               <img
-                src={getDownloadUrl(selectedDocument.id)}
+                src={fileBlobUrl}
                 alt={selectedDocument.title}
                 style={{
                   width: "100%",

@@ -57,7 +57,7 @@ def get_application():
     )
 
     # Import API routers here to avoid circular imports
-    from api.routes import auth, documents, person, relationship, metadata
+    from api.routes import auth, documents, person, relationship, metadata, visualization
 
     # Include routers
     _app.include_router(auth, prefix="/api/auth", tags=["auth"])
@@ -65,6 +65,7 @@ def get_application():
     _app.include_router(person, prefix="/api/person", tags=["person"])
     _app.include_router(relationship, prefix="/api/relationship", tags=["relationship"])
     _app.include_router(metadata, prefix="/api/metadata", tags=["metadata"])
+    _app.include_router(visualization, prefix="/api/visualization", tags=["visualization"])
 
     return _app
 

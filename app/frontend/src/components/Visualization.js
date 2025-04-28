@@ -1,7 +1,8 @@
 // frontend/src/components/Visualization.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import useVisualization from '../hooks/useVisualization';
 import { getMetadata } from '../api/metadata';
+import useAuth from '../hooks/useAuth';
 
 function Visualization() {
   const { vineData, loading, error } = useVisualization();
@@ -9,6 +10,9 @@ function Visualization() {
   const [metadata, setMetadata] = useState(null);
   const [metadataLoading, setMetadataLoading] = useState(false);
   const [metadataError, setMetadataError] = useState("");
+  const { user } = useAuth();
+  // State for the blob URL of the file
+  const [fileBlobUrl, setFileBlobUrl] = useState(null);
 
   /**
    * Handles click on a document circle: fetches metadata and opens modal.
@@ -36,6 +40,33 @@ function Visualization() {
     setMetadataError("");
     setMetadataLoading(false);
   };
+
+  // Fetch the file as a blob with Authorization when a document is selected
+  useEffect(() => {
+    if (!selectedDoc) {
+      setFileBlobUrl(null);
+      return;
+    }
+    // Get token from localStorage
+    const token = localStorage.getItem('token');
+    fetch(`http://localhost:8000/api/documents/${selectedDoc.id}/download`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch file');
+        return res.blob();
+      })
+      .then(blob => {
+        setFileBlobUrl(URL.createObjectURL(blob));
+      })
+      .catch(() => setFileBlobUrl(null));
+    // Clean up blob URL on close
+    return () => {
+      if (fileBlobUrl) URL.revokeObjectURL(fileBlobUrl);
+    };
+  }, [selectedDoc]);
 
   if (loading) {
     return <div>Loading vine data...</div>;
@@ -126,10 +157,20 @@ function Visualization() {
             }}
           >
             <h2>{selectedDoc.title}</h2>
-            {/* Optionally show an image if available */}
-            {selectedDoc.file_type && selectedDoc.file_type.startsWith("image/") && (
+            {/* Always show a download link for the file using the blob URL */}
+            {fileBlobUrl && (
+              <a
+                href={fileBlobUrl}
+                download={selectedDoc.title}
+                style={{ display: "block", marginBottom: "10px" }}
+              >
+                Download file
+              </a>
+            )}
+            {/* Try to preview image if the title looks like an image file using the blob URL */}
+            {fileBlobUrl && selectedDoc.title && /\.(jpe?g|png|gif|bmp|webp)$/i.test(selectedDoc.title) && (
               <img
-                src={`http://localhost:8000/api/documents/${selectedDoc.id}/download`}
+                src={fileBlobUrl}
                 alt={selectedDoc.title}
                 style={{
                   width: "100%",
