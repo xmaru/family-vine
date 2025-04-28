@@ -12,10 +12,10 @@ const Dashboard = () => {
     return <div className="loading">Loading...</div>;
   }
 
-  // If user is not logged in, redirect to login page
-  if (!user) {
-    return <Navigate to="/login"/>;
-  }
+  // // If user is not logged in, redirect to login page
+  // if (!user) {
+  //   return <Navigate to="/login" />;
+  // }
 
   return (
     <div className="app-container">

@@ -34,6 +34,70 @@ const FileUpload = () => {
     multiple: false, // Only allow one file
   });
 
+  // const handleSubmit = async (e) => {
+
+  //   e.preventDefault();
+
+  //   if (!file) {
+  //     setError("Please select a file to upload");
+  //     return;
+  //   }
+
+  //   if (!title.trim()) {
+  //     setError("Please enter a title for the file");
+  //     return;
+  //   }
+
+  //   try {
+  //     setIsUploading(true);
+  //     setError("");
+
+  //     // Create form data
+  //     const formData = new FormData();
+  //     formData.append("file", file);
+  //     formData.append("title", title);
+
+  //     const description = `
+  //     What: ${what}
+  //     When: ${when}
+  //     Where: ${where}
+  //     Who: ${who}
+  //     Why: ${why}
+  //     `;
+  //     formData.append("description", description.trim());
+
+  //     // if (description.trim()) {
+  //     //   formData.append("description", description);
+  //     // }
+
+  //     // Upload file using the documents API
+  //     const response = await uploadDocument(formData);
+
+  //     // Handle progress updates
+  //     const uploadProgressHandler = (progressEvent) => {
+  //       const percentCompleted = Math.round(
+  //         (progressEvent.loaded * 100) / progressEvent.total
+  //       );
+  //       setProgress(percentCompleted);
+  //     };
+
+  //     // Add progress event listener if available
+  //     if (response.config && response.config.onUploadProgress) {
+  //       response.config.onUploadProgress = uploadProgressHandler;
+  //     }
+
+  //     // Navigate to document detail or list page after successful upload
+  //     navigate("/documents");
+  //   } catch (err) {
+  //     console.error("Upload error:", err);
+  //     setError(
+  //       err.response?.data?.detail || "Failed to upload file. Please try again."
+  //     );
+  //   } finally {
+  //     setIsUploading(false);
+  //   }
+  // };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -55,20 +119,22 @@ const FileUpload = () => {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("title", title);
-      formData.append("what", what);
-      formData.append("when", when);
-      formData.append("where", where);
-      formData.append("who", who);
-      formData.append("why", why);
 
-      // if (description.trim()) {
-      //   formData.append("description", description);
-      // }
+      // Combine the 5Ws into one description string
+      const description = `
+  What: ${what}
+  When: ${when}
+  Where: ${where}
+  Who: ${who}
+  Why: ${why}
+      `.trim();
+
+      formData.append("description", description);
 
       // Upload file using the documents API
       const response = await uploadDocument(formData);
 
-      // Handle progress updates
+      // Handle progress updates if needed (optional)
       const uploadProgressHandler = (progressEvent) => {
         const percentCompleted = Math.round(
           (progressEvent.loaded * 100) / progressEvent.total
@@ -76,12 +142,11 @@ const FileUpload = () => {
         setProgress(percentCompleted);
       };
 
-      // Add progress event listener if available
       if (response.config && response.config.onUploadProgress) {
         response.config.onUploadProgress = uploadProgressHandler;
       }
 
-      // Navigate to document detail or list page after successful upload
+      // Navigate to documents page after successful upload
       navigate("/documents");
     } catch (err) {
       console.error("Upload error:", err);
@@ -94,19 +159,19 @@ const FileUpload = () => {
   };
 
   return (
-    <div className='upload-container'>
+    <div className="upload-container">
       <h2>Upload Document</h2>
 
-      {error && <div className='error-message'>{error}</div>}
+      {error && <div className="error-message">{error}</div>}
 
       <form onSubmit={handleSubmit}>
-        <div className='form-group'>
-          <label htmlFor='title'>
+        <div className="form-group">
+          <label htmlFor="title">
             Title <span style={{ color: red }}>*</span>
           </label>
           <input
-            type='text'
-            id='title'
+            type="text"
+            id="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             disabled={isUploading}
@@ -115,7 +180,7 @@ const FileUpload = () => {
         </div>
 
         <div
-          className='form-group'
+          className="form-group"
           style={{ display: "flex", justifyContent: "space-between" }}
         >
           <div
@@ -125,10 +190,10 @@ const FileUpload = () => {
               marginRight: "4%",
             }}
           >
-            <label htmlFor='what'>What</label>
+            <label htmlFor="what">What</label>
             <input
-              type='text'
-              id='what'
+              type="text"
+              id="what"
               value={what}
               onChange={(e) => setWhat(e.target.value)}
               disabled={isUploading}
@@ -140,11 +205,11 @@ const FileUpload = () => {
               display: "inline-block",
             }}
           >
-            <label htmlFor='when'>When</label>
+            <label htmlFor="when">When</label>
             <input
-              type='text'
-              id='when'
-              value={what}
+              type="text"
+              id="when"
+              value={when}
               onChange={(e) => setWhen(e.target.value)}
               disabled={isUploading}
             />
@@ -152,7 +217,7 @@ const FileUpload = () => {
         </div>
 
         <div
-          className='form-group'
+          className="form-group"
           style={{ display: "flex", justifyContent: "space-between" }}
         >
           <div
@@ -162,10 +227,10 @@ const FileUpload = () => {
               marginRight: "4%",
             }}
           >
-            <label htmlFor='where'>Where</label>
+            <label htmlFor="where">Where</label>
             <input
-              type='text'
-              id='where'
+              type="text"
+              id="where"
               value={where}
               onChange={(e) => setWhere(e.target.value)}
               disabled={isUploading}
@@ -177,10 +242,10 @@ const FileUpload = () => {
               display: "inline-block",
             }}
           >
-            <label htmlFor='who'>Who</label>
+            <label htmlFor="who">Who</label>
             <input
-              type='text'
-              id='who'
+              type="text"
+              id="who"
               value={who}
               onChange={(e) => setWho(e.target.value)}
               disabled={isUploading}
@@ -189,11 +254,11 @@ const FileUpload = () => {
           </div>
         </div>
 
-        <div className='form-group'>
-          <label htmlFor='why'>Why</label>
+        <div className="form-group">
+          <label htmlFor="why">Why</label>
           <input
-            type='text'
-            id='why'
+            type="text"
+            id="why"
             value={why}
             onChange={(e) => setWhy(e.target.value)}
             disabled={isUploading}
@@ -211,7 +276,7 @@ const FileUpload = () => {
           />
         </div> */}
 
-        <div className='form-group'>
+        <div className="form-group">
           <label>File *</label>
           <div
             {...getRootProps()}
@@ -221,12 +286,12 @@ const FileUpload = () => {
           >
             <input {...getInputProps()} />
             {file ? (
-              <div className='file-info'>
+              <div className="file-info">
                 <p>Selected file: {file.name}</p>
                 <p>Size: {(file.size / 1024).toFixed(2)} KB</p>
                 <button
-                  type='button'
-                  className='btn btn-sm btn-danger'
+                  type="button"
+                  className="btn btn-sm btn-danger"
                   onClick={(e) => {
                     e.stopPropagation();
                     setFile(null);
@@ -245,27 +310,27 @@ const FileUpload = () => {
         </div>
 
         {isUploading && (
-          <div className='progress-container'>
+          <div className="progress-container">
             <div
-              className='progress-bar'
+              className="progress-bar"
               style={{ width: `${progress}%` }}
             ></div>
             <span>{progress}%</span>
           </div>
         )}
 
-        <div className='form-actions'>
+        <div className="form-actions">
           <button
-            type='button'
-            className='btn btn-secondary'
+            type="button"
+            className="btn btn-secondary"
             onClick={() => navigate("/documents")}
             disabled={isUploading}
           >
             Cancel
           </button>
           <button
-            type='submit'
-            className='btn btn-primary'
+            type="submit"
+            className="btn btn-primary"
             disabled={isUploading || !file}
           >
             {isUploading ? "Uploading..." : "Upload Document"}
