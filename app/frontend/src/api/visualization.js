@@ -3,5 +3,5 @@ import api from './index';
 
 // GET /api/visualization
 export const getVisualizationData = () => {
-  return api.get('/visualization'); 
+  return api.get('/visualization/'); 
 };

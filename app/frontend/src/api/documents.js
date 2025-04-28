@@ -6,30 +6,32 @@ import api from "./index";
  * @returns {Promise} - Promise that resolves with the uploaded document data
  */
 export const uploadDocument = (formData) => {
-  // return api.post('/documents/', formData, {
-  //   headers: {
-  //     'Content-Type': 'multipart/form-data',
-  //   },
-  // });
-  console.log("[FAKE UPLOAD] Simulating document upload...");
-
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        data: {
-          id: Math.floor(Math.random() * 1000), // Random ID
-          title: formData.get("title"),
-          description: formData.get("description"),
-          file_path: "godfather.jpeg", // Simulated file path
-          file_type: "image/jpeg", // Simulated file type
-          file_size: formData.get("file").size, // Simulated file size
-          created_at: new Date().toISOString(), // Current date and time
-          updated_at: new Date().toISOString(), // Current date and time
-        },
-      });
-    }, 1500); // Simulate a 2-second upload time
+  return api.post('/documents/', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
   });
 };
+
+//   console.log("[FAKE UPLOAD] Simulating document upload...");
+
+//   return new Promise((resolve) => {
+//     setTimeout(() => {
+//       resolve({
+//         data: {
+//           id: Math.floor(Math.random() * 1000), // Random ID
+//           title: formData.get("title"),
+//           description: formData.get("description"),
+//           file_path: "godfather.jpeg", // Simulated file path
+//           file_type: "image/jpeg", // Simulated file type
+//           file_size: formData.get("file").size, // Simulated file size
+//           created_at: new Date().toISOString(), // Current date and time
+//           updated_at: new Date().toISOString(), // Current date and time
+//         },
+//       });
+//     }, 1500); // Simulate a 2-second upload time
+//   });
+// };
 
 /**
  * Retrieves a list of documents for the current user

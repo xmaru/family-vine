@@ -1,6 +1,6 @@
 // frontend/src/hooks/useVisualization.js
 import { useState, useEffect, useCallback } from 'react';
-import { getVisualizationData } from '../api/visualization'; // We'll define this next
+import { getVisualizationData } from '../api/visualization'; 
 
 function useVisualization() {
   const [vineData, setVineData] = useState([]);

@@ -4,20 +4,19 @@ import { AuthContext } from "../context/AuthContext";
 import FileList from "../components/documents/FileList";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
-import DummyFileList from "../components/documents/DummyFileList";
 
 const DocumentsPage = () => {
   const { user, loading } = useContext(AuthContext);
 
-  // // If loading, show loading indicator
-  // if (loading) {
-  //   return <div className="loading">Loading...</div>;
-  // }
+  // If loading, show loading indicator
+  if (loading) {
+    return <div className="loading">Loading...</div>;
+  }
 
-  // // If user is not logged in, redirect to login page
-  // if (!user) {
-  //   return <Navigate to="/login" />;
-  // }
+  // If user is not logged in, redirect to login page
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
 
   return (
     <div className="app-container">
@@ -37,7 +36,7 @@ const DocumentsPage = () => {
           </div>
 
           {/* <FileList /> */}
-          <DummyFileList />
+          <FileList />
         </div>
       </main>
       <Footer />

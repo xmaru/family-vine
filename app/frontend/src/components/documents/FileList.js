@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import useDocuments from "../../hooks/useDocuments";
+import { getMetadata } from "../../api/metadata";
 import "../../styles/components/FileList.css";
 
 const FileList = () => {
@@ -14,6 +15,37 @@ const FileList = () => {
   } = useDocuments();
   const [deleteInProgress, setDeleteInProgress] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  const [metadata, setMetadata] = useState(null);
+  const [metadataLoading, setMetadataLoading] = useState(false);
+  const [metadataError, setMetadataError] = useState("");
+
+  /**
+   * Handles document click: fetches metadata and opens modal.
+   * @param {Object} doc - The document object.
+   */
+  const handleDocumentClick = async (doc) => {
+    setSelectedDocument(doc);
+    setMetadata(null);
+    setMetadataError("");
+    setMetadataLoading(true);
+    try {
+      // Fetch metadata for the selected document
+      const response = await getMetadata(doc.id);
+      setMetadata(response.data);
+    } catch (err) {
+      setMetadataError("Failed to load metadata.");
+    } finally {
+      setMetadataLoading(false);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setSelectedDocument(null);
+    setMetadata(null);
+    setMetadataError("");
+    setMetadataLoading(false);
+  };
 
   const handleDelete = async (id, documentName) => {
     if (window.confirm(`Are you sure you want to delete "${documentName}"?`)) {
@@ -109,16 +141,17 @@ const FileList = () => {
 
       <ul className="file-list">
         {documents.map((document) => (
-          <li key={document.id} className="file-item">
+          <li
+            key={document.id}
+            className="file-item"
+            onClick={() => handleDocumentClick(document)}
+            style={{ cursor: "pointer" }}
+          >
             <div className="file-name">
-              <span className="file-icon">
-                {getFileIcon(document.file_type)}
-              </span>
+              <span className="file-icon">{getFileIcon(document.file_type)}</span>
               <span className="file-title">{document.title}</span>
             </div>
-            <div className="file-size">
-              {formatFileSize(document.file_size)}
-            </div>
+            <div className="file-size">{formatFileSize(document.file_size)}</div>
             <div className="file-date">{formatDate(document.created_at)}</div>
             <div className="file-actions">
               <a
@@ -126,12 +159,16 @@ const FileList = () => {
                 className="btn btn-sm btn-secondary"
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={e => e.stopPropagation()}
               >
                 Download
               </a>
               <button
                 className="btn btn-sm btn-danger"
-                onClick={() => handleDelete(document.id, document.title)}
+                onClick={e => {
+                  e.stopPropagation();
+                  handleDelete(document.id, document.title);
+                }}
                 disabled={deleteInProgress}
               >
                 Delete
@@ -140,6 +177,113 @@ const FileList = () => {
           </li>
         ))}
       </ul>
+
+      {/* Modal for document details and metadata */}
+      {selectedDocument && (
+        <div
+          className="modal-overlay"
+          onClick={handleCloseModal}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 1000,
+          }}
+        >
+          <div
+            className="modal-content"
+            onClick={e => e.stopPropagation()}
+            style={{
+              backgroundColor: "white",
+              padding: "30px",
+              borderRadius: "10px",
+              width: "90%",
+              maxWidth: "600px",
+              textAlign: "center",
+            }}
+          >
+            <h2>{selectedDocument.title}</h2>
+            {/* Optionally show an image if available */}
+            {selectedDocument.file_type && selectedDocument.file_type.startsWith("image/") && (
+              <img
+                src={getDownloadUrl(selectedDocument.id)}
+                alt={selectedDocument.title}
+                style={{
+                  width: "100%",
+                  height: "auto",
+                  maxHeight: "300px",
+                  objectFit: "cover",
+                  marginBottom: "5px",
+                  borderRadius: "8px",
+                }}
+              />
+            )}
+
+            {/* Show loading, error, or metadata details */}
+            {metadataLoading ? (
+              <div>Loading details...</div>
+            ) : metadataError ? (
+              <div className="error-message">{metadataError}</div>
+            ) : metadata ? (
+              <>
+                {/* Two vertical stacks side-by-side */}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                    marginTop: "20px",
+                    marginBottom: "20px",
+                    textAlign: "left",
+                    padding: "0 20px",
+                  }}
+                >
+                  {/* Left side: What + Where */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <p>
+                      <strong>What:</strong> {metadata.what}
+                    </p>
+                    <p>
+                      <strong>Where:</strong> {metadata.where}
+                    </p>
+                  </div>
+                  {/* Right side: When + Why */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <p>
+                      <strong>When:</strong> {metadata.when}
+                    </p>
+                    <p>
+                      <strong>Why:</strong> {metadata.why}
+                    </p>
+                  </div>
+                </div>
+                {/* Who centered at bottom */}
+                <div style={{ marginBottom: "20px" }}>
+                  <p>
+                    <strong>Who:</strong> {metadata.who}
+                  </p>
+                </div>
+              </>
+            ) : (
+              <div>No details available.</div>
+            )}
+
+            <button
+              onClick={handleCloseModal}
+              className="btn btn-primary"
+              style={{ marginTop: "10px" }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,12 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useDropzone } from "react-dropzone";
 import { useNavigate } from "react-router-dom";
 import { uploadDocument } from "../../api/documents";
+import { createMetadata } from "../../api/metadata";
+import { AuthContext } from "../../context/AuthContext";
 import "../../styles/components/FileUpload.css";
 import { red } from "@mui/material/colors";
 
 const FileUpload = () => {
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
   const [title, setTitle] = useState("");
   const [what, setWhat] = useState("");
   const [when, setWhen] = useState("");
@@ -34,70 +37,11 @@ const FileUpload = () => {
     multiple: false, // Only allow one file
   });
 
-  // const handleSubmit = async (e) => {
-
-  //   e.preventDefault();
-
-  //   if (!file) {
-  //     setError("Please select a file to upload");
-  //     return;
-  //   }
-
-  //   if (!title.trim()) {
-  //     setError("Please enter a title for the file");
-  //     return;
-  //   }
-
-  //   try {
-  //     setIsUploading(true);
-  //     setError("");
-
-  //     // Create form data
-  //     const formData = new FormData();
-  //     formData.append("file", file);
-  //     formData.append("title", title);
-
-  //     const description = `
-  //     What: ${what}
-  //     When: ${when}
-  //     Where: ${where}
-  //     Who: ${who}
-  //     Why: ${why}
-  //     `;
-  //     formData.append("description", description.trim());
-
-  //     // if (description.trim()) {
-  //     //   formData.append("description", description);
-  //     // }
-
-  //     // Upload file using the documents API
-  //     const response = await uploadDocument(formData);
-
-  //     // Handle progress updates
-  //     const uploadProgressHandler = (progressEvent) => {
-  //       const percentCompleted = Math.round(
-  //         (progressEvent.loaded * 100) / progressEvent.total
-  //       );
-  //       setProgress(percentCompleted);
-  //     };
-
-  //     // Add progress event listener if available
-  //     if (response.config && response.config.onUploadProgress) {
-  //       response.config.onUploadProgress = uploadProgressHandler;
-  //     }
-
-  //     // Navigate to document detail or list page after successful upload
-  //     navigate("/documents");
-  //   } catch (err) {
-  //     console.error("Upload error:", err);
-  //     setError(
-  //       err.response?.data?.detail || "Failed to upload file. Please try again."
-  //     );
-  //   } finally {
-  //     setIsUploading(false);
-  //   }
-  // };
-
+  /**
+   * Handles the document upload and metadata creation process.
+   * First uploads the document, then creates metadata with the 5Ws.
+   * @param {Event} e - The form submission event.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -111,28 +55,27 @@ const FileUpload = () => {
       return;
     }
 
+    if (!who.trim()) {
+      setError("Please enter the 'Who' field");
+      return;
+    }
+
     try {
       setIsUploading(true);
       setError("");
 
-      // Create form data
+      // Create form data for document upload
       const formData = new FormData();
       formData.append("file", file);
       formData.append("title", title);
-
-      // Combine the 5Ws into one description string
-      const description = `
-  What: ${what}
-  When: ${when}
-  Where: ${where}
-  Who: ${who}
-  Why: ${why}
-      `.trim();
-
-      formData.append("description", description);
+      // Do not include the 5Ws in the description
+      formData.append("description", "");
 
       // Upload file using the documents API
+      // Important: This returns the document object with its ID
       const response = await uploadDocument(formData);
+      const document = response.data;
+      const documentId = document.id;
 
       // Handle progress updates if needed (optional)
       const uploadProgressHandler = (progressEvent) => {
@@ -141,17 +84,32 @@ const FileUpload = () => {
         );
         setProgress(percentCompleted);
       };
-
       if (response.config && response.config.onUploadProgress) {
         response.config.onUploadProgress = uploadProgressHandler;
       }
 
-      // Navigate to documents page after successful upload
+      // Prepare metadata payload
+      // Use user.full_name if available, otherwise fallback to user.username
+      const creatorOfDocument = user?.full_name || user?.username || "";
+      // Important: Send the 5Ws and creator_of_document to the metadata API
+      const metadataPayload = {
+        what,
+        when,
+        where,
+        who,
+        why,
+        creator_of_document: creatorOfDocument,
+      };
+      await createMetadata(documentId, metadataPayload);
+
+      // Navigate to documents page after successful upload and metadata creation
       navigate("/documents");
     } catch (err) {
-      console.error("Upload error:", err);
+      console.error("Upload or metadata error:", err);
       setError(
-        err.response?.data?.detail || "Failed to upload file. Please try again."
+        err.response?.data?.detail ||
+          err.message ||
+          "Failed to upload file or save metadata. Please try again."
       );
     } finally {
       setIsUploading(false);
