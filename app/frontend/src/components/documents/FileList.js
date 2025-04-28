@@ -4,6 +4,7 @@ import useDocuments from "../../hooks/useDocuments";
 import { getMetadata } from "../../api/metadata";
 import "../../styles/components/FileList.css";
 import useAuth from "../../hooks/useAuth";
+import DocumentModal from './DocumentModal';
 
 const FileList = () => {
   const {
@@ -211,124 +212,10 @@ const FileList = () => {
 
       {/* Modal for document details and metadata */}
       {selectedDocument && (
-        <div
-          className="modal-overlay"
-          onClick={handleCloseModal}
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            backgroundColor: "rgba(0,0,0,0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 1000,
-          }}
-        >
-          <div
-            className="modal-content"
-            onClick={e => e.stopPropagation()}
-            style={{
-              backgroundColor: "white",
-              padding: "30px",
-              borderRadius: "10px",
-              width: "90%",
-              maxWidth: "600px",
-              textAlign: "center",
-            }}
-          >
-            <h2>{selectedDocument.title}</h2>
-            {/* Always show a download link for the file using the blob URL */}
-            {fileBlobUrl && (
-              <a
-                href={fileBlobUrl}
-                download={selectedDocument.title}
-                style={{ display: "block", marginBottom: "10px" }}
-                onClick={e => e.stopPropagation()}
-              >
-                Download file
-              </a>
-            )}
-            {/* Debug log for image preview */}
-            {fileBlobUrl && selectedDocument.file_type && (
-              console.log('Previewing:', selectedDocument.title, selectedDocument.file_type, fileBlobUrl)
-            )}
-            {/* Try to preview image if the file_type is an image */}
-            {fileBlobUrl && selectedDocument.file_type && selectedDocument.file_type.startsWith('image/') && (
-              <img
-                src={fileBlobUrl}
-                alt={selectedDocument.title}
-                style={{
-                  width: "100%",
-                  height: "auto",
-                  maxHeight: "300px",
-                  objectFit: "cover",
-                  marginBottom: "5px",
-                  borderRadius: "8px",
-                }}
-              />
-            )}
-
-            {/* Show loading, error, or metadata details */}
-            {metadataLoading ? (
-              <div>Loading details...</div>
-            ) : metadataError ? (
-              <div className="error-message">{metadataError}</div>
-            ) : metadata ? (
-              <>
-                {/* Two vertical stacks side-by-side */}
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                    marginTop: "20px",
-                    marginBottom: "20px",
-                    textAlign: "left",
-                    padding: "0 20px",
-                  }}
-                >
-                  {/* Left side: What + Where */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                    <p>
-                      <strong>What:</strong> {metadata.what}
-                    </p>
-                    <p>
-                      <strong>Where:</strong> {metadata.where}
-                    </p>
-                  </div>
-                  {/* Right side: When + Why */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                    <p>
-                      <strong>When:</strong> {metadata.when}
-                    </p>
-                    <p>
-                      <strong>Why:</strong> {metadata.why}
-                    </p>
-                  </div>
-                </div>
-                {/* Who centered at bottom */}
-                <div style={{ marginBottom: "20px" }}>
-                  <p>
-                    <strong>Who:</strong> {metadata.who}
-                  </p>
-                </div>
-              </>
-            ) : (
-              <div>No details available.</div>
-            )}
-
-            <button
-              onClick={handleCloseModal}
-              className="btn btn-primary"
-              style={{ marginTop: "10px" }}
-            >
-              Close
-            </button>
-          </div>
-        </div>
+        <DocumentModal
+          document={selectedDocument}
+          onClose={handleCloseModal}
+        />
       )}
     </div>
   );

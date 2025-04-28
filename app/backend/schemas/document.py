@@ -33,3 +33,6 @@ class DocumentWithDownloadUrl(Document):
 
 class DocumentVisualize(DocumentBase):
     id: int
+    file_type: str
+    file_size: int
+    created_at: datetime
