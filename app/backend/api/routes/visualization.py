@@ -19,7 +19,7 @@ def get_visualization_data(
 ) -> Any:
     """
     Returns a list of the user's documents, suitable for "vine" visualization.
-    Uses the same logic as 'documents' but with a minimal schema (DocumentVisualize).
+    Now includes file_type, file_size, and created_at for frontend modal image preview and details.
     """
     # 1) Query the documents for the current user
     documents = FileService.get_documents_for_user(db, user_id=current_user.id)

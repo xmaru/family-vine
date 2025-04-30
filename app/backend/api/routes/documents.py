@@ -165,6 +165,107 @@ def get_person_documents_for_visualization(
     
     return documents
 
+@router.get("/{document_id}/download")
+def download_document(
+    *,
+    db: Session = Depends(get_db),
+    document_id: int,
+    current_user: User = Depends(get_current_active_user)
+) -> Any:
+    """Download a document file.
+
+    Args:
+        db (Session): Database session.
+        document_id (int): ID of the document to download.
+        current_user (User): Currently authenticated user.
+
+    Returns:
+        FileResponse: The document file as a downloadable response.
+
+    Raises:
+        HTTPException: If document or file is not found (404 Not Found).
+    """
+    document = FileService.get_document_by_id(
+        db=db,
+        document_id=document_id,
+        user_id=current_user.id
+    )
+    
+    if not document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found"
+        )
+    
+    file_path = FileService.get_file_path(document)
+    
+    if not os.path.exists(file_path):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="File not found on server"
+        )
+    
+    # Get original filename from path
+    original_filename = os.path.basename(document.file_path).split("_", 1)[1]
+    
+    return FileResponse(
+        path=file_path,
+        filename=original_filename,
+        media_type=document.file_type
+    )
+
+@router.get("/{person_id}/{document_id}/download")
+def download_document_by_person(
+    *,
+    db: Session = Depends(get_db),
+    person_id: int,
+    document_id: int,
+    current_user: User = Depends(get_current_active_user)
+) -> Any:
+    """Download a document file that is connected to a specific person.
+
+    Args:
+        db (Session): Database session.
+        person_id (int): ID of the person connected to the document.
+        document_id (int): ID of the document to download.
+        current_user (User): Currently authenticated user.
+
+    Returns:
+        FileResponse: The document file as a downloadable response.
+
+    Raises:
+        HTTPException: If document or file is not found (404 Not Found).
+    """
+    document = FileService.get_person_document_by_id(
+        db=db,
+        person_id=person_id,
+        document_id=document_id,
+        user_id=current_user.id
+    )
+    
+    if not document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found"
+        )
+    
+    file_path = FileService.get_file_path(document)
+    
+    if not os.path.exists(file_path):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="File not found on server"
+        )
+    
+    # Get original filename from path
+    original_filename = os.path.basename(document.file_path).split("_", 1)[1]
+    
+    return FileResponse(
+        path=file_path,
+        filename=original_filename,
+        media_type=document.file_type
+    )
+
 @router.get("/{document_id}", response_model=DocumentSchema)
 def get_document(
     *,
@@ -321,104 +422,3 @@ def delete_document(
     # Set the response status code to 204 No Content
     response.status_code = status.HTTP_204_NO_CONTENT
     return None
-
-@router.get("/{document_id}/download")
-def download_document(
-    *,
-    db: Session = Depends(get_db),
-    document_id: int,
-    current_user: User = Depends(get_current_active_user)
-) -> Any:
-    """Download a document file.
-
-    Args:
-        db (Session): Database session.
-        document_id (int): ID of the document to download.
-        current_user (User): Currently authenticated user.
-
-    Returns:
-        FileResponse: The document file as a downloadable response.
-
-    Raises:
-        HTTPException: If document or file is not found (404 Not Found).
-    """
-    document = FileService.get_document_by_id(
-        db=db,
-        document_id=document_id,
-        user_id=current_user.id
-    )
-    
-    if not document:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Document not found"
-        )
-    
-    file_path = FileService.get_file_path(document)
-    
-    if not os.path.exists(file_path):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="File not found on server"
-        )
-    
-    # Get original filename from path
-    original_filename = os.path.basename(document.file_path).split("_", 1)[1]
-    
-    return FileResponse(
-        path=file_path,
-        filename=original_filename,
-        media_type=document.file_type
-    )
-
-@router.get("/{person_id}/{document_id}/download")
-def download_document_by_person(
-    *,
-    db: Session = Depends(get_db),
-    person_id: int,
-    document_id: int,
-    current_user: User = Depends(get_current_active_user)
-) -> Any:
-    """Download a document file that is connected to a specific person.
-
-    Args:
-        db (Session): Database session.
-        person_id (int): ID of the person connected to the document.
-        document_id (int): ID of the document to download.
-        current_user (User): Currently authenticated user.
-
-    Returns:
-        FileResponse: The document file as a downloadable response.
-
-    Raises:
-        HTTPException: If document or file is not found (404 Not Found).
-    """
-    document = FileService.get_person_document_by_id(
-        db=db,
-        person_id=person_id,
-        document_id=document_id,
-        user_id=current_user.id
-    )
-    
-    if not document:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Document not found"
-        )
-    
-    file_path = FileService.get_file_path(document)
-    
-    if not os.path.exists(file_path):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="File not found on server"
-        )
-    
-    # Get original filename from path
-    original_filename = os.path.basename(document.file_path).split("_", 1)[1]
-    
-    return FileResponse(
-        path=file_path,
-        filename=original_filename,
-        media_type=document.file_type
-    )

@@ -1,6 +1,75 @@
+# Ignore Python bytecode and cache
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+# Ignore virtual environments
 venv/
-UPLOAD_DIRECTORY
-family_vine.db
-.db
-.pyc
-**/__pycache__
+venv311/
+.env/
+.env.bak/
+.venv/
+
+# Ignore environment variable files
+.env
+.env.*
+
+# Ignore database files
+*.db
+*.sqlite3
+
+# Ignore uploads and generated files
+UPLOAD_DIRECTORY/
+uploads/
+media/
+staticfiles/
+
+# Ignore test and coverage outputs
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+
+# Ignore IDE/editor/project files
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+*.swp
+*.DS_Store
+*.iml
+
+# Ignore build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+MANIFEST
+
+# Ignore macOS system files
+.DS_Store
+
+# Ignore Windows system files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Ignore pip wheel files
+*.whl
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore mypy and other type checker outputs
+.mypy_cache/
+.dmypy.json
+.pyre/
+.pytype/

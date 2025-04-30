@@ -10,31 +10,32 @@ const DocumentsPage = () => {
 
   // If loading, show loading indicator
   if (loading) {
-    return <div className='loading'>Loading...</div>;
+    return <div className="loading">Loading...</div>;
   }
 
   // If user is not logged in, redirect to login page
   if (!user) {
-    return <Navigate to='/login' />;
+    return <Navigate to="/login" />;
   }
 
   return (
-    <div className='app-container'>
+    <div className="app-container">
       <Header />
-      <main className='main-content'>
-        <div className='container'>
-          <div className='page-header'>
-            <div className='page-title'>
+      <main className="main-content">
+        <div className="container">
+          <div className="page-header">
+            <div className="page-title">
               <h1>My Documents</h1>
               <p>Manage your uploaded documents</p>
             </div>
-            <div className='page-actions'>
-              <Link to='/upload' className='btn btn-primary'>
+            <div className="page-actions">
+              <Link to="/upload" className="btn btn-primary">
                 Upload New Document
               </Link>
             </div>
           </div>
 
+          {/* <FileList /> */}
           <FileList />
         </div>
       </main>

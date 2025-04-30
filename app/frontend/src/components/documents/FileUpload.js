@@ -1,12 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useDropzone } from "react-dropzone";
 import { useNavigate } from "react-router-dom";
 import { uploadDocument } from "../../api/documents";
+import { createMetadata } from "../../api/metadata";
+import { AuthContext } from "../../context/AuthContext";
 import "../../styles/components/FileUpload.css";
 import { red } from "@mui/material/colors";
 
 const FileUpload = () => {
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
   const [title, setTitle] = useState("");
   const [what, setWhat] = useState("");
   const [when, setWhen] = useState("");
@@ -34,6 +37,11 @@ const FileUpload = () => {
     multiple: false, // Only allow one file
   });
 
+  /**
+   * Handles the document upload and metadata creation process.
+   * First uploads the document, then creates metadata with the 5Ws.
+   * @param {Event} e - The form submission event.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -47,46 +55,61 @@ const FileUpload = () => {
       return;
     }
 
+    if (!who.trim()) {
+      setError("Please enter the 'Who' field");
+      return;
+    }
+
     try {
       setIsUploading(true);
       setError("");
 
-      // Create form data
+      // Create form data for document upload
       const formData = new FormData();
       formData.append("file", file);
       formData.append("title", title);
-      formData.append("what", what);
-      formData.append("when", when);
-      formData.append("where", where);
-      formData.append("who", who);
-      formData.append("why", why);
-
-      // if (description.trim()) {
-      //   formData.append("description", description);
-      // }
+      // Do not include the 5Ws in the description
+      formData.append("description", "");
 
       // Upload file using the documents API
+      // Important: This returns the document object with its ID
       const response = await uploadDocument(formData);
+      const document = response.data;
+      const documentId = document.id;
 
-      // Handle progress updates
+      // Handle progress updates if needed (optional)
       const uploadProgressHandler = (progressEvent) => {
         const percentCompleted = Math.round(
           (progressEvent.loaded * 100) / progressEvent.total
         );
         setProgress(percentCompleted);
       };
-
-      // Add progress event listener if available
       if (response.config && response.config.onUploadProgress) {
         response.config.onUploadProgress = uploadProgressHandler;
       }
 
-      // Navigate to document detail or list page after successful upload
+      // Prepare metadata payload
+      // Use user.full_name if available, otherwise fallback to user.username
+      const creatorOfDocument = user?.full_name || user?.username || "";
+      // Important: Send the 5Ws and creator_of_document to the metadata API
+      const metadataPayload = {
+        what,
+        when,
+        where,
+        who,
+        why,
+        creator_of_document: creatorOfDocument,
+      };
+      await createMetadata(documentId, metadataPayload);
+
+      // Navigate to documents page after successful upload and metadata creation
       navigate("/documents");
     } catch (err) {
-      console.error("Upload error:", err);
+      console.error("Upload or metadata error:", err);
       setError(
-        err.response?.data?.detail || "Failed to upload file. Please try again."
+        err.response?.data?.detail ||
+          err.message ||
+          "Failed to upload file or save metadata. Please try again."
       );
     } finally {
       setIsUploading(false);
@@ -94,19 +117,19 @@ const FileUpload = () => {
   };
 
   return (
-    <div className='upload-container'>
+    <div className="upload-container">
       <h2>Upload Document</h2>
 
-      {error && <div className='error-message'>{error}</div>}
+      {error && <div className="error-message">{error}</div>}
 
       <form onSubmit={handleSubmit}>
-        <div className='form-group'>
-          <label htmlFor='title'>
+        <div className="form-group">
+          <label htmlFor="title">
             Title <span style={{ color: red }}>*</span>
           </label>
           <input
-            type='text'
-            id='title'
+            type="text"
+            id="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             disabled={isUploading}
@@ -115,7 +138,7 @@ const FileUpload = () => {
         </div>
 
         <div
-          className='form-group'
+          className="form-group"
           style={{ display: "flex", justifyContent: "space-between" }}
         >
           <div
@@ -125,10 +148,10 @@ const FileUpload = () => {
               marginRight: "4%",
             }}
           >
-            <label htmlFor='what'>What</label>
+            <label htmlFor="what">What</label>
             <input
-              type='text'
-              id='what'
+              type="text"
+              id="what"
               value={what}
               onChange={(e) => setWhat(e.target.value)}
               disabled={isUploading}
@@ -140,11 +163,11 @@ const FileUpload = () => {
               display: "inline-block",
             }}
           >
-            <label htmlFor='when'>When</label>
+            <label htmlFor="when">When</label>
             <input
-              type='text'
-              id='when'
-              value={what}
+              type="text"
+              id="when"
+              value={when}
               onChange={(e) => setWhen(e.target.value)}
               disabled={isUploading}
             />
@@ -152,7 +175,7 @@ const FileUpload = () => {
         </div>
 
         <div
-          className='form-group'
+          className="form-group"
           style={{ display: "flex", justifyContent: "space-between" }}
         >
           <div
@@ -162,10 +185,10 @@ const FileUpload = () => {
               marginRight: "4%",
             }}
           >
-            <label htmlFor='where'>Where</label>
+            <label htmlFor="where">Where</label>
             <input
-              type='text'
-              id='where'
+              type="text"
+              id="where"
               value={where}
               onChange={(e) => setWhere(e.target.value)}
               disabled={isUploading}
@@ -177,10 +200,10 @@ const FileUpload = () => {
               display: "inline-block",
             }}
           >
-            <label htmlFor='who'>Who</label>
+            <label htmlFor="who">Who</label>
             <input
-              type='text'
-              id='who'
+              type="text"
+              id="who"
               value={who}
               onChange={(e) => setWho(e.target.value)}
               disabled={isUploading}
@@ -189,11 +212,11 @@ const FileUpload = () => {
           </div>
         </div>
 
-        <div className='form-group'>
-          <label htmlFor='why'>Why</label>
+        <div className="form-group">
+          <label htmlFor="why">Why</label>
           <input
-            type='text'
-            id='why'
+            type="text"
+            id="why"
             value={why}
             onChange={(e) => setWhy(e.target.value)}
             disabled={isUploading}
@@ -211,7 +234,7 @@ const FileUpload = () => {
           />
         </div> */}
 
-        <div className='form-group'>
+        <div className="form-group">
           <label>File *</label>
           <div
             {...getRootProps()}
@@ -221,12 +244,12 @@ const FileUpload = () => {
           >
             <input {...getInputProps()} />
             {file ? (
-              <div className='file-info'>
+              <div className="file-info">
                 <p>Selected file: {file.name}</p>
                 <p>Size: {(file.size / 1024).toFixed(2)} KB</p>
                 <button
-                  type='button'
-                  className='btn btn-sm btn-danger'
+                  type="button"
+                  className="btn btn-sm btn-danger"
                   onClick={(e) => {
                     e.stopPropagation();
                     setFile(null);
@@ -245,27 +268,27 @@ const FileUpload = () => {
         </div>
 
         {isUploading && (
-          <div className='progress-container'>
+          <div className="progress-container">
             <div
-              className='progress-bar'
+              className="progress-bar"
               style={{ width: `${progress}%` }}
             ></div>
             <span>{progress}%</span>
           </div>
         )}
 
-        <div className='form-actions'>
+        <div className="form-actions">
           <button
-            type='button'
-            className='btn btn-secondary'
+            type="button"
+            className="btn btn-secondary"
             onClick={() => navigate("/documents")}
             disabled={isUploading}
           >
             Cancel
           </button>
           <button
-            type='submit'
-            className='btn btn-primary'
+            type="submit"
+            className="btn btn-primary"
             disabled={isUploading || !file}
           >
             {isUploading ? "Uploading..." : "Upload Document"}
