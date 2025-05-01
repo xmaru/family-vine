@@ -15,6 +15,8 @@ function Visualization() {
   const { user } = useAuth();
   // State for the blob URL of the file
   const [fileBlobUrl, setFileBlobUrl] = useState(null);
+  const [hoveredDoc, setHoveredDoc] = useState(null);
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
   // Prefetch all metadata for vineData
   useEffect(() => {
@@ -105,6 +107,98 @@ function Visualization() {
     };
   }, [selectedDoc]);
 
+  // Group documents by their date key (mm/dd/yyyy or created_at)
+  /**
+   * Groups documents by their date key (mm/dd/yyyy if valid, else yyyy-mm-dd from created_at).
+   * @param {Array} docs - Array of document objects.
+   * @param {Object} metadataMap - Map of docId to metadata.
+   * @returns {Object} - { dateKey: [docs] }
+   */
+  function groupByDate(docs, metadataMap) {
+    const groups = {};
+    docs.forEach(doc => {
+      const meta = metadataMap[doc.id];
+      let dateKey = meta && meta.when && isValidMMDDYYYY(meta.when)
+        ? meta.when
+        : doc.created_at.split('T')[0]; // fallback to yyyy-mm-dd
+      if (!groups[dateKey]) groups[dateKey] = [];
+      groups[dateKey].push(doc);
+    });
+    return groups;
+  }
+
+  // --- Dynamic SVG sizing and node spacing ---
+  const minSvgWidth = 600;
+  const svgHeight = 600;
+  const nodeRadius = 10;
+  const margin = 100;
+  const vineY = svgHeight / 2;
+  const clusterYOffset = 40; // how far below the vine the cluster hangs
+
+  // --- Clustered vine layout ---
+  const clusters = React.useMemo(() => {
+    return groupByDate(sortedVineData, metadataMap);
+  }, [sortedVineData, metadataMap]);
+
+  const clusterKeys = Object.keys(clusters).sort((a, b) => new Date(a) - new Date(b));
+  const clusterCount = clusterKeys.length;
+  const clusterSpacing = clusterCount > 1
+    ? Math.max((minSvgWidth - 2 * margin) / (clusterCount - 1), 80)
+    : 0;
+
+  // Vine line runs through vineY
+  const vineCenters = clusterKeys.map((dateKey, i) => ({
+    x: margin + i * clusterSpacing,
+    y: vineY,
+  }));
+
+  // Polyline through vine centers (chronologic order)
+  const polylinePoints = vineCenters.map(pos => `${pos.x},${pos.y}`).join(' ');
+
+  // For each cluster, arrange nodes in a downward-pointing triangle below the vine
+  const clusterNodePositions = {};
+  clusterKeys.forEach((dateKey, i) => {
+    const docs = clusters[dateKey];
+    const center = vineCenters[i];
+    if (docs.length === 1) {
+      // Single node: just below the vine
+      clusterNodePositions[docs[0].id] = {
+        x: center.x,
+        y: center.y + clusterYOffset,
+      };
+    } else {
+      // Multiple nodes: arrange in a triangle
+      // Calculate rows for triangle
+      let row = 0, count = 0;
+      const rows = [];
+      while (count < docs.length) {
+        row += 1;
+        const rowCount = row;
+        rows.push(rowCount);
+        count += rowCount;
+      }
+      // Adjust last row if too many
+      if (count > docs.length) {
+        rows[rows.length - 1] -= (count - docs.length);
+      }
+      let docIdx = 0;
+      let yStart = center.y + clusterYOffset;
+      let rowHeight = 22; // vertical distance between rows
+      for (let r = 0; r < rows.length; r++) {
+        const nInRow = rows[r];
+        const y = yStart + r * rowHeight;
+        // Center the row horizontally
+        const totalWidth = (nInRow - 1) * (nodeRadius * 2.2);
+        for (let j = 0; j < nInRow && docIdx < docs.length; j++, docIdx++) {
+          clusterNodePositions[docs[docIdx].id] = {
+            x: center.x - totalWidth / 2 + j * (nodeRadius * 2.2),
+            y,
+          };
+        }
+      }
+    }
+  });
+
   if (loading) {
     return <div>Loading vine data...</div>;
   }
@@ -117,47 +211,64 @@ function Visualization() {
     return <div>No vine data available.</div>;
   }
 
-  // --- Dynamic SVG sizing and node spacing ---
-  // Minimum SVG width and margin for aesthetics
-  const minSvgWidth = 600;
-  const svgHeight = 600;
-  const nodeRadius = 10;
-  const margin = 100;
-  // Calculate spacing and SVG width so all nodes fit
-  const nodeCount = sortedVineData.length;
-  // Minimum spacing between nodes for readability
-  const spacing = nodeCount > 1
-    ? Math.max((minSvgWidth - 2 * margin) / (nodeCount - 1), 80)
-    : 0;
-  // SVG width grows if more nodes are present
-  const svgWidth = Math.max(minSvgWidth, margin * 2 + spacing * (nodeCount - 1));
-
-  // Calculate positions for each document node so all are visible
-  const nodePositions = sortedVineData.map((doc, index) => ({
-    x: margin + index * spacing,
-    y: svgHeight / 2,
-  }));
-
-  // Create a string for the SVG polyline points to connect the nodes
-  // This draws the line between the files in chronologic order
-  const polylinePoints = nodePositions.map(pos => `${pos.x},${pos.y}`).join(' ');
-
   return (
     <>
-      {/* SVG width and node positions are now dynamic */}
-      <svg width={svgWidth} height={svgHeight} style={{ backgroundColor: '#f9f9f9' }}>
-        {/* Draw the line connecting the document nodes */}
+      {/* SVG width and node positions are now dynamic and clustered */}
+      <svg width={minSvgWidth} height={svgHeight} style={{ backgroundColor: '#f9f9f9' }}>
+        {/* Draw the line connecting the cluster centers in chronologic order */}
         <polyline
           points={polylinePoints}
           stroke="brown"
           strokeWidth="6"
           fill="none"
         />
-        {/* Draw the document nodes as circles */}
-        {sortedVineData.map((doc, index) => {
-          const { x, y } = nodePositions[index];
-          const docLabel = doc.title;
-
+        {/* Draw stems from vine to each cluster (grape bunch) */}
+        {clusterKeys.map((dateKey, i) => {
+          const docs = clusters[dateKey];
+          const vineCenter = vineCenters[i];
+          let topNode;
+          if (docs.length === 1) {
+            // Only one node, connect directly
+            topNode = clusterNodePositions[docs[0].id];
+          } else {
+            // Top node is the one with the smallest y value (topmost in triangle)
+            topNode = docs
+              .map(doc => clusterNodePositions[doc.id])
+              .reduce((min, curr) => (curr.y < min.y ? curr : min), { y: Infinity });
+          }
+          return (
+            <line
+              key={dateKey}
+              x1={vineCenter.x}
+              y1={vineCenter.y}
+              x2={topNode.x}
+              y2={topNode.y}
+              stroke="brown"
+              strokeWidth={4}
+            />
+          );
+        })}
+        {hoveredDoc && (
+          <text
+            x={tooltipPos.x}
+            y={290}
+            textAnchor="middle"
+            fill="black"
+            fontSize="14"
+            fontWeight="bold"
+            style={{
+              pointerEvents: 'none',
+              userSelect: 'none',
+              textShadow: '0 1px 4px #fff, 0 1px 8px #fff'
+            }}
+          >
+            {hoveredDoc.title}
+          </text>
+        )}
+        {/* Draw the document nodes as circles, clustered by date */}
+        {sortedVineData.map(doc => {
+          const { x, y } = clusterNodePositions[doc.id];
+          // Always show tooltip on hover for every node
           return (
             <g key={doc.id}>
               <circle
@@ -167,17 +278,12 @@ function Visualization() {
                 fill="purple"
                 style={{ cursor: 'pointer' }}
                 onClick={() => handleCircleClick(doc)}
+                onMouseEnter={e => {
+                  setHoveredDoc(doc);
+                  setTooltipPos({ x, y: y - 30 });
+                }}
+                onMouseLeave={() => setHoveredDoc(null)}
               />
-              <text
-                x={x}
-                y={y - 20}
-                textAnchor="middle"
-                fill="black"
-                fontSize="12"
-                fontWeight="bold"
-              >
-                {docLabel}
-              </text>
             </g>
           );
         })}
