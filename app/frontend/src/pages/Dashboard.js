@@ -1,11 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import { Navigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
+import AddPersonModal from "../components/modals/AddPersonModal"; // Import the modal component
+import PeopleList from "../components/people/PeopleList"; // Import the PeopleList component
 
 const Dashboard = () => {
   const { user, loading } = useAuth();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // If loading, show loading indicator
   if (loading) {
@@ -17,6 +20,14 @@ const Dashboard = () => {
     return <Navigate to="/login" />;
   }
 
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
   return (
     <div className="app-container">
       <Header />
@@ -25,14 +36,21 @@ const Dashboard = () => {
           <div className="page-header">
             <h1>Dashboard</h1>
             <p>Welcome to your Family Vine dashboard</p>
+            <button className="btn btn-primary" onClick={handleOpenModal}>
+              Add someone to your Family Tree
+            </button>
           </div>
 
           <div className="dashboard-content">
-            <p>Dashboard content will go here</p>
+            {/* People List */}
+            <PeopleList />
           </div>
         </div>
       </main>
       <Footer />
+
+      {/* Add Person Modal */}
+      {isModalOpen && <AddPersonModal onClose={handleCloseModal} />}
     </div>
   );
 };
