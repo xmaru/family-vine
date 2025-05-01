@@ -4,16 +4,63 @@ import useVisualization from '../../hooks/useVisualization';
 import { getMetadata } from '../../api/metadata';
 import useAuth from '../../hooks/useAuth';
 import DocumentModal from '../documents/DocumentModal';
+import { isValidMMDDYYYY } from '../../utils/validators';
 
 function Visualization() {
   const { vineData, loading, error } = useVisualization();
   const [selectedDoc, setSelectedDoc] = useState(null);
-  const [metadata, setMetadata] = useState(null);
+  const [metadataMap, setMetadataMap] = useState({}); // docId -> metadata
   const [metadataLoading, setMetadataLoading] = useState(false);
   const [metadataError, setMetadataError] = useState("");
   const { user } = useAuth();
   // State for the blob URL of the file
   const [fileBlobUrl, setFileBlobUrl] = useState(null);
+
+  // Prefetch all metadata for vineData
+  useEffect(() => {
+    if (!vineData || vineData.length === 0) return;
+    setMetadataLoading(true);
+    setMetadataError("");
+    Promise.all(
+      vineData.map(doc =>
+        getMetadata(doc.id)
+          .then(res => ({ id: doc.id, metadata: res.data }))
+          .catch(() => ({ id: doc.id, metadata: null }))
+      )
+    )
+      .then(results => {
+        const map = {};
+        results.forEach(({ id, metadata }) => {
+          map[id] = metadata;
+        });
+        setMetadataMap(map);
+      })
+      .catch(() => setMetadataError('Failed to load some metadata.'))
+      .finally(() => setMetadataLoading(false));
+  }, [vineData]);
+
+  // Sort vineData by metadata.when (if valid mm/dd/yyyy), else by created_at
+  const sortedVineData = [...vineData].sort((a, b) => {
+    const metaA = metadataMap[a.id];
+    const metaB = metadataMap[b.id];
+    const whenA = metaA && metaA.when && isValidMMDDYYYY(metaA.when) ? metaA.when : null;
+    const whenB = metaB && metaB.when && isValidMMDDYYYY(metaB.when) ? metaB.when : null;
+    if (whenA && whenB) {
+      // mm/dd/yyyy to Date
+      const [mA, dA, yA] = whenA.split('/').map(Number);
+      const [mB, dB, yB] = whenB.split('/').map(Number);
+      const dateA = new Date(yA, mA - 1, dA);
+      const dateB = new Date(yB, mB - 1, dB);
+      return dateA - dateB;
+    } else if (whenA) {
+      return -1;
+    } else if (whenB) {
+      return 1;
+    } else {
+      // Fallback to created_at (assume ISO string or yyyy-mm-dd)
+      return new Date(a.created_at) - new Date(b.created_at);
+    }
+  });
 
   /**
    * Handles click on a document circle: fetches metadata and opens modal.
@@ -21,23 +68,12 @@ function Visualization() {
    */
   const handleCircleClick = async (doc) => {
     setSelectedDoc(doc);
-    setMetadata(null);
     setMetadataError("");
-    setMetadataLoading(true);
-    try {
-      // Fetch metadata for the selected document
-      const response = await getMetadata(doc.id);
-      setMetadata(response.data);
-    } catch (err) {
-      setMetadataError("Failed to load metadata.");
-    } finally {
-      setMetadataLoading(false);
-    }
+    setMetadataLoading(false); // No need to fetch metadata here, already prefetched
   };
 
   const handleCloseModal = () => {
     setSelectedDoc(null);
-    setMetadata(null);
     setMetadataError("");
     setMetadataLoading(false);
   };
@@ -88,7 +124,7 @@ function Visualization() {
   const nodeRadius = 10;
   const margin = 100;
   // Calculate spacing and SVG width so all nodes fit
-  const nodeCount = vineData.length;
+  const nodeCount = sortedVineData.length;
   // Minimum spacing between nodes for readability
   const spacing = nodeCount > 1
     ? Math.max((minSvgWidth - 2 * margin) / (nodeCount - 1), 80)
@@ -97,13 +133,13 @@ function Visualization() {
   const svgWidth = Math.max(minSvgWidth, margin * 2 + spacing * (nodeCount - 1));
 
   // Calculate positions for each document node so all are visible
-  const nodePositions = vineData.map((doc, index) => ({
+  const nodePositions = sortedVineData.map((doc, index) => ({
     x: margin + index * spacing,
     y: svgHeight / 2,
   }));
 
   // Create a string for the SVG polyline points to connect the nodes
-  // This draws the line between the files in chronological order
+  // This draws the line between the files in chronologic order
   const polylinePoints = nodePositions.map(pos => `${pos.x},${pos.y}`).join(' ');
 
   return (
@@ -118,7 +154,7 @@ function Visualization() {
           fill="none"
         />
         {/* Draw the document nodes as circles */}
-        {vineData.map((doc, index) => {
+        {sortedVineData.map((doc, index) => {
           const { x, y } = nodePositions[index];
           const docLabel = doc.title;
 
