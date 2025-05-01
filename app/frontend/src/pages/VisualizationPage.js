@@ -5,7 +5,7 @@ import { Navigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
-import Visualization from '../components/Visualization';  // <-- add this import
+import Visualization from '../components/visualization/Visualization';  // <-- add this import
 
 const VisualizationPage = () => {
   const { user, loading } = useAuth();

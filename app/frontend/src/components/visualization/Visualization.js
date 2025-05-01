@@ -1,9 +1,9 @@
 // frontend/src/components/Visualization.js
 import React, { useState, useEffect } from 'react';
-import useVisualization from '../hooks/useVisualization';
-import { getMetadata } from '../api/metadata';
-import useAuth from '../hooks/useAuth';
-import DocumentModal from './documents/DocumentModal';
+import useVisualization from '../../hooks/useVisualization';
+import { getMetadata } from '../../api/metadata';
+import useAuth from '../../hooks/useAuth';
+import DocumentModal from '../documents/DocumentModal';
 
 function Visualization() {
   const { vineData, loading, error } = useVisualization();
@@ -81,11 +81,25 @@ function Visualization() {
     return <div>No vine data available.</div>;
   }
 
-  // Sort is not needed here since backend returns sorted by date (oldest to newest)
-  // Calculate positions for each document node
+  // --- Dynamic SVG sizing and node spacing ---
+  // Minimum SVG width and margin for aesthetics
+  const minSvgWidth = 600;
+  const svgHeight = 600;
+  const nodeRadius = 10;
+  const margin = 100;
+  // Calculate spacing and SVG width so all nodes fit
+  const nodeCount = vineData.length;
+  // Minimum spacing between nodes for readability
+  const spacing = nodeCount > 1
+    ? Math.max((minSvgWidth - 2 * margin) / (nodeCount - 1), 80)
+    : 0;
+  // SVG width grows if more nodes are present
+  const svgWidth = Math.max(minSvgWidth, margin * 2 + spacing * (nodeCount - 1));
+
+  // Calculate positions for each document node so all are visible
   const nodePositions = vineData.map((doc, index) => ({
-    x: 100 + index * 200,
-    y: 300,
+    x: margin + index * spacing,
+    y: svgHeight / 2,
   }));
 
   // Create a string for the SVG polyline points to connect the nodes
@@ -94,7 +108,8 @@ function Visualization() {
 
   return (
     <>
-      <svg width="1000" height="600" style={{ backgroundColor: '#f9f9f9' }}>
+      {/* SVG width and node positions are now dynamic */}
+      <svg width={svgWidth} height={svgHeight} style={{ backgroundColor: '#f9f9f9' }}>
         {/* Draw the line connecting the document nodes */}
         <polyline
           points={polylinePoints}
@@ -112,7 +127,7 @@ function Visualization() {
               <circle
                 cx={x}
                 cy={y}
-                r={10}
+                r={nodeRadius}
                 fill="purple"
                 style={{ cursor: 'pointer' }}
                 onClick={() => handleCircleClick(doc)}
