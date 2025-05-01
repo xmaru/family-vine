@@ -4,7 +4,7 @@ import useDocuments from "../../hooks/useDocuments";
 import { getMetadata } from "../../api/metadata";
 import "../../styles/components/FileList.css";
 import useAuth from "../../hooks/useAuth";
-import DocumentModal from './DocumentModal';
+import DocumentModal from "./DocumentModal";
 
 const FileList = () => {
   const {
@@ -102,7 +102,8 @@ const FileList = () => {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString() + " " + date.toLocaleTimeString();
+    // return date.toLocaleDateString() + " " + date.toLocaleTimeString();
+    return date.toLocaleDateString();
   };
 
   // Fetch the file as a blob with Authorization when a document is selected
@@ -113,11 +114,14 @@ const FileList = () => {
     }
     // Get token from localStorage
     const token = localStorage.getItem("token");
-    fetch(`http://localhost:8000/api/documents/${selectedDocument.id}/download`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
+    fetch(
+      `http://localhost:8000/api/documents/${selectedDocument.id}/download`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch file");
         return res.blob();
@@ -166,7 +170,7 @@ const FileList = () => {
       <div className="file-list-header">
         <div className="file-name">Name</div>
         <div className="file-size">Size</div>
-        <div className="file-date">Date</div>
+        <div className="file-date">Upload Date</div>
         <div className="file-actions">Actions</div>
       </div>
 
@@ -179,16 +183,20 @@ const FileList = () => {
             style={{ cursor: "pointer" }}
           >
             <div className="file-name">
-              <span className="file-icon">{getFileIcon(document.file_type)}</span>
+              <span className="file-icon">
+                {getFileIcon(document.file_type)}
+              </span>
               <span className="file-title">{document.title}</span>
             </div>
-            <div className="file-size">{formatFileSize(document.file_size)}</div>
+            <div className="file-size">
+              {formatFileSize(document.file_size)}
+            </div>
             <div className="file-date">{formatDate(document.created_at)}</div>
             <div className="file-actions">
               {/* Open button to open the modal */}
               <button
                 className="btn btn-sm btn-primary"
-                onClick={e => {
+                onClick={(e) => {
                   e.stopPropagation();
                   handleDocumentClick(document);
                 }}
@@ -197,7 +205,7 @@ const FileList = () => {
               </button>
               <button
                 className="btn btn-sm btn-danger"
-                onClick={e => {
+                onClick={(e) => {
                   e.stopPropagation();
                   handleDelete(document.id, document.title);
                 }}
@@ -212,10 +220,7 @@ const FileList = () => {
 
       {/* Modal for document details and metadata */}
       {selectedDocument && (
-        <DocumentModal
-          document={selectedDocument}
-          onClose={handleCloseModal}
-        />
+        <DocumentModal document={selectedDocument} onClose={handleCloseModal} />
       )}
     </div>
   );
