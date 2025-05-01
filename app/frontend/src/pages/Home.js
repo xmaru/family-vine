@@ -1,5 +1,6 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React from "react";
+import { Link } from "react-router-dom";
+import "../Home.css"; // Assuming you have a CSS file for styling
 
 const Home = () => {
   return (
@@ -7,7 +8,9 @@ const Home = () => {
       <header className="hero">
         <div className="hero-content">
           <h1>Family Vine</h1>
-          <p>Weave your family's story through photos, videos, and relationships</p>
+          <p>
+            Weave your family's story through photos, videos, and relationships
+          </p>
           <div className="cta-buttons">
             <Link to="/login" className="btn btn-primary">
               Get Started
@@ -28,7 +31,9 @@ const Home = () => {
           </div>
           <div className="feature-card">
             <h3>Metadata Tagging</h3>
-            <p>Tag files with the 5W information (Who, What, Where, Why, When)</p>
+            <p>
+              Tag files with the 5W information (Who, What, Where, Why, When)
+            </p>
           </div>
           <div className="feature-card">
             <h3>Relationship Management</h3>
