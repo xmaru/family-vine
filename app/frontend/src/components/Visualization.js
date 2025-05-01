@@ -94,7 +94,7 @@ function Visualization() {
 
   return (
     <>
-      <svg width="1000" height="600" style={{ backgroundColor: "white" }}>
+      <svg width="1000" height="600" style={{ backgroundColor: '#f9f9f9' }}>
         {/* Draw the line connecting the document nodes */}
         <polyline
           points={polylinePoints}
@@ -105,9 +105,7 @@ function Visualization() {
         {/* Draw the document nodes as circles */}
         {vineData.map((doc, index) => {
           const { x, y } = nodePositions[index];
-          const dateLabel = doc.created_at
-            ? new Date(doc.created_at).toISOString().slice(0, 10)
-            : 'Unknown';
+          const docLabel = doc.title;
 
           return (
             <g key={doc.id}>
@@ -127,7 +125,7 @@ function Visualization() {
                 fontSize="12"
                 fontWeight="bold"
               >
-                {dateLabel}
+                {docLabel}
               </text>
             </g>
           );
