@@ -1,12 +1,8 @@
 # Ignore Python bytecode and cache
-__pycache__/
-**/__pycache__/
-*.py[cod]
-*$py.class
+
 
 # Ignore virtual environments
 venv/
-venv311/
 .env/
 .env.bak/
 .venv/
