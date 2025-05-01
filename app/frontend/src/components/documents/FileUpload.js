@@ -6,7 +6,7 @@ import { createMetadata } from "../../api/metadata";
 import { AuthContext } from "../../context/AuthContext";
 import "../../styles/components/FileUpload.css";
 import { red } from "@mui/material/colors";
-
+import { isValidMMDDYYYY } from "../../utils/validators";
 const FileUpload = () => {
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
@@ -30,7 +30,6 @@ const FileUpload = () => {
     }
   };
 
-  // TODO: Change the description into the 5Ws (What, When, Where, Who, Why) fields.
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -57,6 +56,11 @@ const FileUpload = () => {
 
     if (!who.trim()) {
       setError("Please enter the 'Who' field");
+      return;
+    }
+
+    if (!isValidMMDDYYYY(when)) {
+      setError("Please enter a valid date in mm/dd/yyyy format");
       return;
     }
 
