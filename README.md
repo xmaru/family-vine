@@ -20,14 +20,32 @@ Family Vine is built with:
 - **Backend**: Python FastAPI RESTful API
 - **Database**: SQLite by default (configurable to other databases)
 - **Authentication**: JWT-based authentication system
+- **Container**: Containerized by Docker 
 
 ## Prerequisites
 
-- **Frontend**: Node.js (version 14 or later) and npm (version 6 or later)
-- **Backend**: Python 3.8 or later and pip
+- **Docker**: Docker must installed and accessible
+- **If you don't want to use docker:**
+   - **Frontend**: Node.js (version 14 or later) and npm (version 6 or later)
+   - **Backend**: Python 3.8 or later and pip
+
 
 ## Setup Instructions
 
+### Using Docker
+1. **Initial build or when changes are made to the app**
+   ```bash
+   docker-compose build
+   ```
+2. **Run the container**
+   ```bash
+   docker-compose up
+   ```
+3. **Stop the container**
+   ```bash
+   docker-compose down
+   ```
+### Docker takes care of all prerequisites and dependency installations so backend and frontend setup can be skipped
 ### Backend Setup
 
 1. **Navigate to the backend directory:**
